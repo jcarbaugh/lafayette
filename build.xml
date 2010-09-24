@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Lafayette" default="dist" basedir=".">
+	<description>Lafayette build file.</description>
+
+	<!-- set global properties for this build -->
+	<property name="dir.build" location="build" />
+	<property name="dir.conf" location="conf" />
+	<property name="dir.dist" location="dist" />
+	<property name="dir.lib" location="lib" />
+	<property name="dir.src" location="src" />
+
+	<property name="class.main" value="edu.american.weiss.lafayette.Application" />
+
+	<!-- classpaths -->
+	<path id="lafayette.classpath">
+		<pathelement location="${dir.build}" />
+		<pathelement location="${dir.conf}" />
+		<pathelement location="${dir.lib}" />
+		<pathelement path="${java.class.path}" />
+	</path>
+
+	<target name="init">
+		<tstamp />
+		<mkdir dir="${dir.build}" />
+	</target>
+
+	<target name="compile" depends="init" description="compile the source ">
+		<javac srcdir="${dir.src}" destdir="${dir.build}" />
+	</target>
+
+	<target name="dist" depends="compile" description="generate the distribution">
+		<mkdir dir="${dir.dist}/lib" />
+		<!-- ${DSTAMP} -->
+		<jar destfile="${dir.dist}/lib/lafayette.jar">
+			<fileset dir="${dir.build}" includes="**/*.class" />
+			<fileset dir="${dir.conf}" />
+			<manifest>
+				<attribute name="Main-Class" value="${class.main}" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="clean" description="clean up">
+		<delete dir="${dir.build}" />
+		<delete dir="${dir.dist}" />
+	</target>
+
+	<target name="run" depends="compile" description="run from compiled source">
+		<java classname="${class.main}" classpathref="lafayette.classpath" failonerror="true" fork="true">
+			<arg value="edu.american.weiss.lafayette.experiment.test.TestExperimentImpl" />
+		</java>
+	</target>
+
+	<target name="run-jar" depends="dist" description="run from jar">
+		<java jar="${dir.dist}/lib/lafayette.jar" failonerror="true" fork="true">
+			<classpath>
+				<pathelement location="${dir.dist}/lib/lafayette.jar" />
+				<pathelement path="${java.class.path}" />
+			</classpath>
+		</java>
+	</target>
+
+</project>

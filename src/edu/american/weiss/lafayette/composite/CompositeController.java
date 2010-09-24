@@ -8,7 +8,7 @@ import java.util.Random;
 
 import edu.american.weiss.lafayette.Application;
 import edu.american.weiss.lafayette.chamber.Chamber;
-import edu.american.weiss.lafayette.chamber.Opto22Hopper;
+import edu.american.weiss.lafayette.chamber.Hopper;
 import edu.american.weiss.lafayette.event.ChamberEvent;
 import edu.american.weiss.lafayette.event.CompositeTransitionEvent;
 import edu.american.weiss.lafayette.event.ReinforcerEvent;
@@ -85,7 +85,7 @@ public class CompositeController implements KeyListener, MouseListener, Runnable
         long now;
         Composite comp;
         
-        Opto22Hopper hopper = null;
+        Hopper hopper = null;
         
         try {
         	hopper = Chamber.getHopper();

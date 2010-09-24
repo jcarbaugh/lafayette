@@ -8,7 +8,7 @@ public class Chamber {
     private static Chamber chamber = new Chamber();
     
     private UserInterface ui;
-    private MockHopper hopper;
+    private Hopper hopper;
     
     private Chamber() {
         ui = UserInterfaceFactory.getUserInterfaceInstance();
@@ -19,7 +19,7 @@ public class Chamber {
         return chamber.ui;
     }
     
-    public static MockHopper getHopper() {
+    public static Hopper getHopper() {
         return chamber.hopper;
     }
     

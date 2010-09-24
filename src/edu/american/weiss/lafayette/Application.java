@@ -4,10 +4,15 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Random;
 
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+
 import edu.american.huntsberry.data.CompositeGroupCumulativeRecorder;
 import edu.american.huntsberry.data.MasterRedBlueRecorder;
 //import edu.american.huntsberry.data.TerminalBaseline2Recorder;
 //import edu.american.huntsberry.data.TerminalBaseline3Recorder;
+import edu.american.weiss.lafayette.chamber.Hopper;
+import edu.american.weiss.lafayette.chamber.MockHopper;
 import edu.american.weiss.lafayette.chamber.Opto22Hopper;
 import edu.american.weiss.lafayette.chamber.HopperListener;
 import edu.american.weiss.lafayette.chamber.UserInterface;
@@ -47,6 +52,13 @@ public class Application {
 	    	loadProperties("application.properties");
 	    	
 	    	controller = new EventController();
+	    	
+//	    	try {
+//				UIManager.setLookAndFeel(
+//					UIManager.getCrossPlatformLookAndFeelClassName());
+//			} catch (UnsupportedLookAndFeelException e) {
+//				// failed to set look and feel. oh well.
+//			}
 		
 	    	ui = UserInterfaceFactory.getUserInterfaceInstance();
 	    	ui.init();
@@ -122,7 +134,7 @@ public class Application {
 		controller.destroy();
 		
 		try {
-			Opto22Hopper.getInstance().destroy();
+			//Opto22Hopper.getInstance().destroy();
 		} catch (Exception e) { }
 		
 		DataRecorder.debug();

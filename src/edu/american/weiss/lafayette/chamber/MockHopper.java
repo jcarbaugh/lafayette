@@ -1,8 +1,9 @@
 package edu.american.weiss.lafayette.chamber;
 
-public class MockHopper implements Hopper {
+public class MockHopper extends AbstractHopper {
 
 	private static MockHopper hopper;
+	private boolean isActive;
 	
 	public static synchronized Hopper getInstance() {
 		if (hopper == null) {
@@ -11,13 +12,13 @@ public class MockHopper implements Hopper {
         return hopper;
 	}
 	
-	public void run() {
-		// TODO Auto-generated method stub
-		
+	public boolean activateHopper(long duration) {
+		isActive = true;
+		return isActive;
 	}
 	
-	public void destroy() {
-		
+	public void deactivateHopper() {
+		isActive = false;
 	}
 
 }

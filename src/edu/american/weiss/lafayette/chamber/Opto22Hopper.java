@@ -1,20 +1,13 @@
 package edu.american.weiss.lafayette.chamber;
 
 import edu.american.weiss.lafayette.Application;
-import edu.american.weiss.lafayette.EventController;
 import edu.american.weiss.lafayette.event.ReinforcerCompleteEvent;
 import edu.american.weiss.lafayette.io.jni.Opto22Controller;
 
 /**
  * @author jeremy
  */
-public class Opto22Hopper implements Hopper {
-    
-    private static Opto22Hopper hopper;
-    
-    private boolean isActive = false;
-    private long duration;
-    private long startTime;
+public class Opto22Hopper extends AbstractHopper {
     
     private Opto22Controller opto;
     
@@ -54,7 +47,7 @@ public class Opto22Hopper implements Hopper {
         	this.duration = duration;
         	this.startTime = System.currentTimeMillis();
         		        	
-        	isActive = true;
+        	this.isActive = true;
         	activated = true;
         	            
         }
@@ -70,46 +63,9 @@ public class Opto22Hopper implements Hopper {
     	} catch (NullPointerException npe) {
     	} finally {
     		Application.getEventController().notifyListeners(new ReinforcerCompleteEvent());
-            hopper.isActive = false;
+            this.isActive = false;
     	}      
         
-    }
-    
-    public void run() {
-        
-        while (true) {
-            
-            try {
-        
-                if (hopper.isActive) {
-                    
-                    if (System.currentTimeMillis() > (hopper.startTime + hopper.duration) &&
-                    		hopper.duration > 0) {
-                        
-                    	try {
-                    		opto.deactivateHopper();
-                    	} catch (NullPointerException npe) {
-                    		npe.printStackTrace();
-                    	}
-
-                		Application.getEventController().notifyListeners(new ReinforcerCompleteEvent());
-                        
-                        hopper.isActive = false;
-                        
-                    }
-                    
-                }
-                
-                Thread.sleep(50);
-                
-            } catch (Exception e) { }
-            
-        }
-        
-    }
-    
-    public boolean isActive() {
-        return isActive;
     }
 
 }
