@@ -11,6 +11,7 @@ import edu.american.huntsberry.data.CompositeGroupCumulativeRecorder;
 import edu.american.huntsberry.data.MasterRedBlueRecorder;
 //import edu.american.huntsberry.data.TerminalBaseline2Recorder;
 //import edu.american.huntsberry.data.TerminalBaseline3Recorder;
+import edu.american.weiss.lafayette.chamber.Chamber;
 import edu.american.weiss.lafayette.chamber.Hopper;
 import edu.american.weiss.lafayette.chamber.MockHopper;
 import edu.american.weiss.lafayette.chamber.Opto22Hopper;
@@ -134,7 +135,10 @@ public class Application {
 		controller.destroy();
 		
 		try {
-			//Opto22Hopper.getInstance().destroy();
+			Hopper hopper = Chamber.getHopper();
+			if (hopper != null) {
+				hopper.destroy();
+			}
 		} catch (Exception e) { }
 		
 		DataRecorder.debug();
