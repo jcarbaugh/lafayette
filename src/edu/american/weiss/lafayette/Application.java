@@ -7,14 +7,12 @@ import java.util.Random;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import edu.american.huntsberry.data.CompositeGroupCumulativeRecorder;
-import edu.american.huntsberry.data.MasterRedBlueRecorder;
+//import edu.american.huntsberry.data.CompositeGroupCumulativeRecorder;
+//import edu.american.huntsberry.data.MasterRedBlueRecorder;
 //import edu.american.huntsberry.data.TerminalBaseline2Recorder;
 //import edu.american.huntsberry.data.TerminalBaseline3Recorder;
 import edu.american.weiss.lafayette.chamber.Chamber;
 import edu.american.weiss.lafayette.chamber.Hopper;
-import edu.american.weiss.lafayette.chamber.MockHopper;
-import edu.american.weiss.lafayette.chamber.Opto22Hopper;
 import edu.american.weiss.lafayette.chamber.HopperListener;
 import edu.american.weiss.lafayette.chamber.UserInterface;
 import edu.american.weiss.lafayette.chamber.UserInterfaceFactory;
@@ -23,15 +21,14 @@ import edu.american.weiss.lafayette.data.DataRecorderListener;
 import edu.american.weiss.lafayette.data.DataRecorder;
 import edu.american.weiss.lafayette.data.EventRecorderListener;
 import edu.american.weiss.lafayette.data.ResponseRecorderListener;
-import edu.american.weiss.lafayette.data.ResponseSummaryListener;
-import edu.american.weiss.lafayette.data.ResponseSummaryListenerTB2;
-import edu.american.weiss.lafayette.data.ResponseSummaryListenerTB3;
+//import edu.american.weiss.lafayette.data.ResponseSummaryListener;
+//import edu.american.weiss.lafayette.data.ResponseSummaryListenerTB2;
+//import edu.american.weiss.lafayette.data.ResponseSummaryListenerTB3;
 import edu.american.weiss.lafayette.event.DestroyEvent;
 import edu.american.weiss.lafayette.event.listener.ChamberEventListener;
 import edu.american.weiss.lafayette.experiment.Experiment;
 import edu.american.weiss.lafayette.experiment.test.TestExperimentImpl;
 import edu.american.weiss.lafayette.gui.ProcessingFrame;
-import edu.american.weiss.lafayette.server.ControlServer;
 
 /**
  * @author jeremy
@@ -54,12 +51,14 @@ public class Application {
 	    	
 	    	controller = new EventController();
 	    	
-//	    	try {
-//				UIManager.setLookAndFeel(
-//					UIManager.getCrossPlatformLookAndFeelClassName());
-//			} catch (UnsupportedLookAndFeelException e) {
-//				// failed to set look and feel. oh well.
-//			}
+	    	if (getBooleanProperty("xplatform_laf")) {
+	    		try {
+					UIManager.setLookAndFeel(
+						UIManager.getCrossPlatformLookAndFeelClassName());
+				} catch (UnsupportedLookAndFeelException e) {
+					// failed to set look and feel. oh well.
+				}
+	    	}  	
 		
 	    	ui = UserInterfaceFactory.getUserInterfaceInstance();
 	    	ui.init();

@@ -61,7 +61,6 @@ public class UserInterface extends JFrame implements ChamberEventListener {
     private JPanel pnlResponseArea;
     private JPanel pnlResponseContainer;
     private JPanel pnlHopperIndicator;
-    private Properties props;
     
     private static UserInterface uiInstance = null;
     
