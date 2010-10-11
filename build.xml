@@ -47,7 +47,12 @@
 
 	<target name="run" depends="compile" description="run from compiled source">
 		<java classname="${class.main}" classpathref="lafayette.classpath" failonerror="true" fork="true">
-			<arg value="edu.american.weiss.lafayette.experiment.test.TestExperimentImpl" />
+		</java>
+	</target>
+	
+	<target name="run-od" depends="compile" description="run from compiled source">
+		<java classname="${class.main}" classpathref="lafayette.classpath" failonerror="true" fork="true">
+			<arg value="edu.american.huntsberry.experiment.ObjectDiscrimination" />
 		</java>
 	</target>
 

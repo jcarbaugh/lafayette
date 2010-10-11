@@ -1,5 +1,7 @@
 package edu.american.weiss.lafayette.chamber;
 
+import java.lang.reflect.Method;
+
 import edu.american.weiss.lafayette.Application;
 
 /**
@@ -19,8 +21,10 @@ public class Chamber {
             Application.getProperty(
             	"hopper_class",
             	"edu.american.weiss.lafayette.chamber.MockHopper"));
-            hopper = (Hopper) cls.newInstance();
+            Method mthd = cls.getMethod("getInstance");
+            this.hopper = (Hopper) mthd.invoke(null);
         } catch (Exception e) {
+        	System.out.println("!!!!!" + e);
         	// couldn't create hopper. oh well?
         }
     }

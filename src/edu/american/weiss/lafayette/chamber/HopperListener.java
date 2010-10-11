@@ -13,7 +13,11 @@ public class HopperListener implements ChamberEventListener {
 		
 			int duration = Application.getIntProperty("reinforcement_duration");
 			
-			Opto22Hopper.getInstance().activateHopper(duration);
+			Hopper h = Chamber.getHopper();
+			
+			if (h != null) {
+				h.activateHopper(duration);
+			}
 			
 		}
 

@@ -61,7 +61,10 @@ public abstract class AbstractHopper implements Hopper {
                 
                 Thread.sleep(50);
                 
-            } catch (Exception e) { }
+            } catch (Exception e) {
+            	System.out.println(e);
+            }
+            
             
         }
         

@@ -84,9 +84,9 @@ public abstract class BaseComposite implements Composite {
     /**
      * @see edu.american.weiss.lafayette.composite.Composite#getActions(int, int)
      */
-    public List getActions(int x, int y) {
+    public List<CompositeAction> getActions(int x, int y) {
 		
-		ArrayList al = new ArrayList(10);
+		ArrayList<CompositeAction> al = new ArrayList<CompositeAction>(10);
 		CompositeElement ce = getActiveCompositeElement(x, y);
 		
 		if (ce != null &&
