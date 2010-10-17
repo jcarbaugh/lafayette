@@ -5,10 +5,10 @@ import edu.american.weiss.lafayette.composite.BaseCompositeAction;
 
 public class AudioAction extends BaseCompositeAction {
 	
-	private Audio aud;
+	private String audioPath;
 	
 	public AudioAction(String audioPath) {
-		aud = new Audio(audioPath);
+		this.audioPath = audioPath;
 	}
 
 	public boolean runAsThread() {
@@ -16,7 +16,7 @@ public class AudioAction extends BaseCompositeAction {
 	}
 
 	public void run() {
-		aud.start();
+		new Audio(audioPath).start();
 	}
 
 }
