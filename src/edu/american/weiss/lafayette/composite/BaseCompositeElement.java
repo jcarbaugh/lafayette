@@ -15,7 +15,7 @@ import edu.american.weiss.lafayette.schedule.ScheduleRepository;
 public class BaseCompositeElement implements CompositeElement {
 
 	private Composite c;
-	private List actions;
+	private List<CompositeAction> actions;
 	
 	private Color bgColor;
 	private Color olColor;
@@ -27,7 +27,7 @@ public class BaseCompositeElement implements CompositeElement {
 	private int zIndex;
 	
 	public BaseCompositeElement() {
-	    actions = new ArrayList();
+	    actions = new ArrayList<CompositeAction>();
 	    groupName = DEFAULT_GROUP_NAME;
 	}
 	
@@ -98,14 +98,14 @@ public class BaseCompositeElement implements CompositeElement {
     /**
      * @see edu.american.weiss.lafayette.composite.CompositeElement#getComponentAction()
      */
-    public List getCompositeActions() {
+    public List<CompositeAction> getCompositeActions() {
 		return actions;
     }
 
     /**
      * @see edu.american.weiss.lafayette.composite.CompositeElement#setComponentAction(edu.american.weiss.lafayette.composite.CompositeAction)
      */
-    public void setCompositeActions(List actions) {
+    public void setCompositeActions(List<CompositeAction> actions) {
     	if (actions != null) {
     		this.actions = actions;
     	}

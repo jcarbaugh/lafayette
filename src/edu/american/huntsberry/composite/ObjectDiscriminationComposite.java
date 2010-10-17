@@ -89,6 +89,7 @@ public class ObjectDiscriminationComposite extends BaseComposite implements Imag
 		ce.setBackgroundColor(Color.BLACK);
 		ce.setOutlineColor(Color.BLACK);
 		if (isCorrect) {
+			ce.setGroupName("correct");
 			ce.addCompositeAction(
 				new AudioAction(
 					Application.getProperty("correct_response_wav")));
@@ -96,6 +97,7 @@ public class ObjectDiscriminationComposite extends BaseComposite implements Imag
 				new HopperAction(
 					Application.getIntProperty("reinforcement_duration")));
 		} else {
+			ce.setGroupName("incorrect");
 			ce.addCompositeAction(
 				new AudioAction(
 					Application.getProperty("incorrect_response_wav")));

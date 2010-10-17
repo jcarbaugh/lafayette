@@ -20,8 +20,8 @@ public interface Composite {
 
     public boolean addCompositeElement(CompositeElement ce);
     public void clearCompositeElements();
-    public List getCompositeElements();
-    public void setCompositeElements(List componentElements);
+    public List<CompositeElement> getCompositeElements();
+    public void setCompositeElements(List<CompositeElement> componentElements);
 
     public void init(Graphics2D g2, CompositeController cc);
 
@@ -29,7 +29,7 @@ public interface Composite {
 
     public void destroy();
     
-    public List getActions(int x, int y);
+    public List<CompositeAction> getActions(int x, int y);
     public CompositeElement getActiveCompositeElement(int x, int y);
 
     public long getEndTime();

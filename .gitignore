@@ -1,6 +1,7 @@
 bin/
 build/
 dist/
+logs/
 media/
 .classpath
 .project

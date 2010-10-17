@@ -90,11 +90,9 @@ public class Application {
 	    		cc = new CompositeController(new TestExperimentImpl());
 	    	}
 	    	
-	    	//controller.registerEventListener(new MasterRedBlueRecorder());
 	    	controller.registerEventListener(new HopperListener());
-	    	controller.registerEventListener(new ResponseRecorderListener());   
-	    	//controller.registerEventListener(new ResponseSummaryListener());	
-	    	controller.registerEventListener(new DataRecorderListener());
+	    	controller.registerEventListener(new ResponseRecorderListener());
+	    	controller.registerEventListener(new EventRecorderListener());
 	    	
 	    	ccThread = new Thread(cc);
 	    	ccThread.start();

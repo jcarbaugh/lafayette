@@ -21,7 +21,7 @@ public class ResponseRecorderListener implements ChamberEventListener {
 		startTime = System.currentTimeMillis();
 		try {
 			fos = new FileOutputStream(
-					Application.getProperty("log_path") + "/responselog_" + startTime + ".log");
+					Application.getProperty("log_path") + "responselog_" + startTime + ".log");
 			write("Elapsed\t\tPoint\t\tComp\t\tComp Elem\n");
 		} catch (Exception e) { }
 	}

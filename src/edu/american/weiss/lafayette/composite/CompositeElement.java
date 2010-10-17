@@ -5,7 +5,6 @@ import java.awt.Shape;
 import java.util.List;
 
 import edu.american.weiss.lafayette.chamber.UserInterface;
-import edu.american.weiss.lafayette.schedule.Schedule;
 
 public interface CompositeElement {
 	
@@ -16,8 +15,8 @@ public interface CompositeElement {
 	public Color getBackgroundColor();
 	public void setBackgroundColor(Color c);
 	
-	public List getCompositeActions();
-	public void setCompositeActions(List actions);
+	public List<CompositeAction> getCompositeActions();
+	public void setCompositeActions(List<CompositeAction> actions);
 	public void addCompositeAction(CompositeAction ca);
 	public void removeCompositeAction(CompositeAction ca);
 	

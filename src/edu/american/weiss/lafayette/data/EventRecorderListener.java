@@ -20,7 +20,7 @@ public class EventRecorderListener implements ChamberEventListener {
 	public EventRecorderListener() {
 		try {
 			fos = new FileOutputStream(
-					Application.getProperty("log_path") + "/composite.log");
+					Application.getProperty("log_path") + "composite.log");
 			br = new BufferedWriter(new OutputStreamWriter(fos));
 		} catch (Exception e) { }
 		startTime = System.currentTimeMillis();
