@@ -2,7 +2,6 @@ package edu.american.weiss.lafayette.chamber;
 
 import edu.american.weiss.lafayette.Application;
 import edu.american.weiss.lafayette.event.ReinforcerCompleteEvent;
-import edu.american.weiss.lafayette.io.jni.Opto22Controller;
 
 public class MockHopper extends AbstractHopper {
 	
