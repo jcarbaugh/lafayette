@@ -1,6 +1,7 @@
 bin/
 build/
 dist/
+media/
 .classpath
 .project
 *.javac
