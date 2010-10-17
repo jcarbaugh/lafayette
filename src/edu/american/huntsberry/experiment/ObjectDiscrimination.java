@@ -24,8 +24,8 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 	private int currentTrial;
 	private int iti;
 	
-	private Image leftImage;
-	private Image rightImage;
+	private Image correctImage;
+	private Image incorrectImage;
 	
 	public ObjectDiscrimination() {
 		
@@ -38,8 +38,8 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 		
 		Toolkit tk = Toolkit.getDefaultToolkit();
 		
-		leftImage = tk.getImage(Application.getProperty("left_image_path"));
-		rightImage = tk.getImage(Application.getProperty("right_image_path"));
+		correctImage = tk.getImage(Application.getProperty("correct_image_path"));
+		incorrectImage = tk.getImage(Application.getProperty("incorrect_image_path"));
 		
 	}
 
@@ -66,7 +66,7 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 			
 			currentTrial++;
 			
-			comp = new ObjectDiscriminationComposite(ui, ui.getResponseSize(), leftImage, rightImage);
+			comp = new ObjectDiscriminationComposite(ui, ui.getResponseSize(), correctImage, incorrectImage);
 	        comp.setType(Composite.ACTIVE_COMPOSITE);
 			comp.setDuration(5000);
 			

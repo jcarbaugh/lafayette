@@ -7,13 +7,14 @@ import java.awt.Image;
 import java.awt.Polygon;
 import java.awt.image.ImageObserver;
 import java.util.List;
+import java.util.Random;
 
 import edu.american.huntsberry.compositeelement.ObjectDiscriminationElement;
 import edu.american.weiss.lafayette.Application;
+import edu.american.weiss.lafayette.actions.AudioAction;
 import edu.american.weiss.lafayette.actions.HopperAction;
 import edu.american.weiss.lafayette.chamber.UserInterface;
 import edu.american.weiss.lafayette.composite.BaseComposite;
-import edu.american.weiss.lafayette.composite.BaseCompositeElement;
 import edu.american.weiss.lafayette.composite.CompositeAction;
 import edu.american.weiss.lafayette.composite.CompositeController;
 import edu.american.weiss.lafayette.composite.CompositeElement;
@@ -22,16 +23,17 @@ public class ObjectDiscriminationComposite extends BaseComposite implements Imag
     
 	private CompositeController cc;
     private Dimension d;
-    private Image lImg;
-    private Image rImg;
+    private Image correctImage;
+    private Image incorrectImage;
+    private Random rand = new Random();
     private UserInterface ui;
     
-    public ObjectDiscriminationComposite(UserInterface ui, Dimension d, Image lImg, Image rImg) {
+    public ObjectDiscriminationComposite(UserInterface ui, Dimension d, Image cImg, Image iImg) {
 		super(ui);
 		this.d = d;
 		this.ui = ui;
-		this.lImg = lImg;
-		this.rImg = rImg;
+		this.correctImage = cImg;
+		this.incorrectImage = iImg;
 	}
 
 	public void init(Graphics2D g2, CompositeController cc) {
@@ -58,8 +60,12 @@ public class ObjectDiscriminationComposite extends BaseComposite implements Imag
 		
 		int qWidth = d.width / 4;
 		
-		drawImage(g2, lImg, -qWidth, 0, true);
-		drawImage(g2, rImg, qWidth, 0, true);
+		if (rand.nextInt(2) == 0) {
+			qWidth = qWidth * -1;
+		}
+		
+		drawImage(g2, correctImage, -qWidth, 0, true);
+		drawImage(g2, incorrectImage, qWidth, 0, false);
 
 	}
 	
@@ -76,7 +82,7 @@ public class ObjectDiscriminationComposite extends BaseComposite implements Imag
 		p.addPoint(x + width, y + height);
 		p.addPoint(x, y + height);
 		
-		CompositeElement ce = new BaseCompositeElement();
+		CompositeElement ce = new ObjectDiscriminationElement(isCorrect);
 		ce.init(this);
 		ce.setUserInterface(ui);
 		ce.setShape(p);
@@ -84,10 +90,15 @@ public class ObjectDiscriminationComposite extends BaseComposite implements Imag
 		ce.setOutlineColor(Color.BLACK);
 		if (isCorrect) {
 			ce.addCompositeAction(
+				new AudioAction(
+					Application.getProperty("correct_response_wav")));
+			ce.addCompositeAction(
 				new HopperAction(
 					Application.getIntProperty("reinforcement_duration")));
 		} else {
-			/// do something else
+			ce.addCompositeAction(
+				new AudioAction(
+					Application.getProperty("incorrect_response_wav")));
 		}
 
 		addCompositeElement(ce);
