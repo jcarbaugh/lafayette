@@ -77,6 +77,8 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 			
 		}
 		
+		lastResponseWasCorrect = false;
+		
 		return comp;
 		
 	}
@@ -114,7 +116,14 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 			CompositeElement el = comp.getActiveCompositeElement(re.getX(), re.getY());
 			if (el instanceof ObjectDiscriminationElement) {
 				ObjectDiscriminationElement ode = (ObjectDiscriminationElement) el;
-				lastResponseWasCorrect = ode.isCorrect();
+				ObjectDiscriminationComposite odc = (ObjectDiscriminationComposite) comp;
+				if (ode.isCorrect()) {
+					lastResponseWasCorrect = true;
+					odc.setStatus("correct");
+				} else {
+					lastResponseWasCorrect = false;
+					odc.setStatus("incorrect");
+				}
 			}
 		}
 	}

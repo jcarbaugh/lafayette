@@ -11,6 +11,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 //import edu.american.huntsberry.data.MasterRedBlueRecorder;
 //import edu.american.huntsberry.data.TerminalBaseline2Recorder;
 //import edu.american.huntsberry.data.TerminalBaseline3Recorder;
+import edu.american.huntsberry.data.ODRecorder;
 import edu.american.weiss.lafayette.chamber.Chamber;
 import edu.american.weiss.lafayette.chamber.Hopper;
 import edu.american.weiss.lafayette.chamber.HopperListener;
@@ -93,6 +94,10 @@ public class Application {
 	    	controller.registerEventListener(new HopperListener());
 	    	controller.registerEventListener(new ResponseRecorderListener());
 	    	controller.registerEventListener(new EventRecorderListener());
+	    	
+	    	ODRecorder odRecorder = new ODRecorder();
+	    	controller.registerEventListener(odRecorder);
+	    	new Thread(odRecorder).start();
 	    	
 	    	ccThread = new Thread(cc);
 	    	ccThread.start();

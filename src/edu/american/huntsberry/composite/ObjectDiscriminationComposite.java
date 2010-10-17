@@ -28,6 +28,8 @@ public class ObjectDiscriminationComposite extends BaseComposite implements Imag
     private Random rand = new Random();
     private UserInterface ui;
     
+    private String status = "refused";
+    
     public ObjectDiscriminationComposite(UserInterface ui, Dimension d, Image cImg, Image iImg) {
 		super(ui);
 		this.d = d;
@@ -121,5 +123,13 @@ public class ObjectDiscriminationComposite extends BaseComposite implements Imag
 		ui.writeMessage("actions:" + actions.size());
     	return actions; 
     }
+	
+	public String getStatus() {
+		return status;
+	}
+	
+	public void setStatus(String s) {
+		this.status = s;
+	}
 
 }
