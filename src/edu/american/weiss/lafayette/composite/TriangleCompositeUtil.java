@@ -30,9 +30,9 @@ public class TriangleCompositeUtil {
 	public static final int TYPE_BOTTOM_LEFT = 2;
 	public static final int TYPE_BOTTOM_RIGHT = 3;
 
-	private Map colorNameMap;
-	private Map typeNameMap;
-	private Map shortTypeNameMap;
+	private Map<Color, String> colorNameMap;
+	private Map<Integer, String> typeNameMap;
+	private Map<Integer, String> shortTypeNameMap;
 	
 	private Rectangle boundary;
 	private Rectangle boundaryActive;
@@ -47,19 +47,19 @@ public class TriangleCompositeUtil {
 
 		ra = new RestAction();
 		
-		typeNameMap = new HashMap();
+		typeNameMap = new HashMap<Integer, String>();
 		typeNameMap.put(Integer.valueOf(TYPE_TOP_LEFT), "top_left");
 		typeNameMap.put(Integer.valueOf(TYPE_TOP_RIGHT), "top_right");
 		typeNameMap.put(Integer.valueOf(TYPE_BOTTOM_LEFT), "bottom_left");
 		typeNameMap.put(Integer.valueOf(TYPE_BOTTOM_RIGHT), "bottom_right");
 		
-		shortTypeNameMap = new HashMap();
+		shortTypeNameMap = new HashMap<Integer, String>();
 		shortTypeNameMap.put(Integer.valueOf(TYPE_TOP_LEFT), "tl");
 		shortTypeNameMap.put(Integer.valueOf(TYPE_TOP_RIGHT), "tr");
 		shortTypeNameMap.put(Integer.valueOf(TYPE_BOTTOM_LEFT), "bl");
 		shortTypeNameMap.put(Integer.valueOf(TYPE_BOTTOM_RIGHT), "br");
 		
-		colorNameMap = new HashMap();
+		colorNameMap = new HashMap<Color, String>();
 		colorNameMap.put(COLOR_BLACK, "black");
 		colorNameMap.put(COLOR_GREEN, "green");
 		colorNameMap.put(COLOR_ORANGE, "orange");

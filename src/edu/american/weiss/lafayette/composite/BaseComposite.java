@@ -33,7 +33,7 @@ public abstract class BaseComposite implements Composite {
 	private CompositeAction globalAction = null;
 	private Schedule globalSchedule;
 	private String globalScheduleId;
-	protected List compositeElements;
+	protected List<CompositeElement> compositeElements;
 		
     private UserInterface ui;
     
@@ -42,7 +42,7 @@ public abstract class BaseComposite implements Composite {
     protected Dimension d;
 	
 	public BaseComposite(UserInterface ui) {
-		compositeElements = new ArrayList(5);
+		compositeElements = new ArrayList<CompositeElement>(5);
 		this.ui = ui;
 		id = this.getClass().getName();
 		groupName = DEFAULT_GROUP_NAME;
@@ -55,7 +55,7 @@ public abstract class BaseComposite implements Composite {
 	    if (globalScheduleId != null) {
 	    	globalSchedule = ScheduleRepository.getInstance().getSchedule(this.getClass(), globalScheduleId);
 	    }
-	    for (Iterator it = compositeElements.iterator(); it.hasNext();) {
+	    for (Iterator<CompositeElement> it = compositeElements.iterator(); it.hasNext();) {
 	    	((CompositeElement) it.next()).init(this);
 	    }
 	}
@@ -126,14 +126,14 @@ public abstract class BaseComposite implements Composite {
     /**
      * @see edu.american.weiss.lafayette.composite.Composite#getComponentElements()
      */
-    public List getCompositeElements() {
+    public List<CompositeElement> getCompositeElements() {
 		return compositeElements;
     }
 
     /**
      * @see edu.american.weiss.lafayette.composite.Composite#setComponentElements(java.util.List)
      */
-    public void setCompositeElements(List componentElements) {
+    public void setCompositeElements(List<CompositeElement> componentElements) {
 		this.compositeElements = componentElements;
     }
 
@@ -184,7 +184,7 @@ public abstract class BaseComposite implements Composite {
         if (globalSchedule != null) {
         	globalSchedule.start();
         }
-        Iterator it = getCompositeElements().iterator();
+        Iterator<CompositeElement> it = getCompositeElements().iterator();
         while (it.hasNext()) {
             ((CompositeElement) it.next()).start();
         }
@@ -195,7 +195,7 @@ public abstract class BaseComposite implements Composite {
         if (globalSchedule != null) {
         	globalSchedule.pause(System.currentTimeMillis());
         }
-        Iterator it = getCompositeElements().iterator();
+        Iterator<CompositeElement> it = getCompositeElements().iterator();
         while (it.hasNext()) {
             ((CompositeElement) it.next()).destroy();
         }

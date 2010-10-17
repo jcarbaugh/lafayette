@@ -5,12 +5,6 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-import edu.american.weiss.lafayette.Application;
-import edu.american.weiss.lafayette.composite.CompositeController;
-import edu.american.weiss.lafayette.event.ChamberEvent;
-import edu.american.weiss.lafayette.event.ReinforcerEvent;
-import edu.american.weiss.lafayette.event.ResponseEvent;
-
 public class UserInterfaceListener implements KeyListener, MouseListener {
     
     public void mouseClicked(MouseEvent e) {

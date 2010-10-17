@@ -14,42 +14,30 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
-import java.io.InputStream;
-import java.io.IOException;
-import java.util.List;
 import java.util.MissingResourceException;
-import java.util.Properties;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import edu.american.weiss.lafayette.composite.Composite;
-import edu.american.weiss.lafayette.composite.CompositeAction;
-import edu.american.weiss.lafayette.composite.CompositeElement;
-import edu.american.weiss.lafayette.data.DataRecorder;
 import edu.american.weiss.lafayette.event.ChamberEvent;
 import edu.american.weiss.lafayette.event.ReinforcerCompleteEvent;
 import edu.american.weiss.lafayette.event.ReinforcerEvent;
 import edu.american.weiss.lafayette.event.listener.ChamberEventListener;
 import edu.american.weiss.lafayette.Application;
 
-
 public class UserInterface extends JFrame implements ChamberEventListener {
 
+	private static final long serialVersionUID = -8345425150947645683L;
 	private static final String SHOW_CURSOR_PROPERTY_KEY = "show_cursor";
 	
     private boolean isFullScreen    = false;
     private boolean isInitialized   = false;
     private boolean showCursor		= false;
-    
-    private Composite c = null;
     
     private DisplayMode originalDisplayMode;
     private GraphicsDevice device;
@@ -61,8 +49,6 @@ public class UserInterface extends JFrame implements ChamberEventListener {
     private JPanel pnlResponseArea;
     private JPanel pnlResponseContainer;
     private JPanel pnlHopperIndicator;
-    
-    private static UserInterface uiInstance = null;
     
     protected UserInterface(GraphicsDevice device) throws MissingResourceException {
     	
@@ -168,20 +154,12 @@ public class UserInterface extends JFrame implements ChamberEventListener {
     }
     
     public Dimension getScreenDimension() {
-        Graphics2D g2 = (Graphics2D) pnlResponseArea.getGraphics();
+        //Graphics2D g2 = (Graphics2D) pnlResponseArea.getGraphics();
         return pnlResponseArea.getSize();
     }
     
-    
-    /*
-     * TODO
-     */
     public void paint(Graphics g) {
-    	
-        CompositeElement ce;
-        
         super.paint(g);
-    	
     }
     
     public void destroy() {
