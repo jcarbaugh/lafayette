@@ -40,6 +40,7 @@ public class Application {
 	private static Thread ccThread;
 	private static UserInterface ui;
 	private static EventController controller;
+	private static Experiment exp;
 	
 	private static Properties props;
 		
@@ -63,7 +64,6 @@ public class Application {
 		
 	    	ui = UserInterfaceFactory.getUserInterfaceInstance();
 	    	ui.init();
-	    	controller.registerEventListener(ui);
 	    
 	    	if (args.length > 0) {
 	    		
@@ -75,7 +75,7 @@ public class Application {
 	    		
 	    		Class cls = Class.forName(className);
 	    		loadProperties(cls.getSimpleName() + ".properties");
-	    		Experiment exp = (Experiment) cls.newInstance();
+	    		exp = (Experiment) cls.newInstance();
 	    		
 	    		controller.registerEventListener(exp);
 	    		
@@ -88,8 +88,11 @@ public class Application {
 	    		cc = new CompositeController(exp);
 	    		
 	    	} else {
-	    		cc = new CompositeController(new TestExperimentImpl());
+	    		exp = new TestExperimentImpl();
+	    		cc = new CompositeController(exp);
 	    	}
+
+	    	controller.registerEventListener(ui);
 	    	
 	    	controller.registerEventListener(new HopperListener());
 	    	controller.registerEventListener(new ResponseRecorderListener());
@@ -196,6 +199,10 @@ public class Application {
 	
 	public static EventController getEventController() {
 		return controller;
+	}
+	
+	public static Experiment getExperiment() {
+		return exp;
 	}
 
 }

@@ -7,14 +7,10 @@ import java.awt.Toolkit;
 import edu.american.huntsberry.composite.BlackComposite;
 import edu.american.huntsberry.composite.ColorComposite;
 import edu.american.huntsberry.composite.ObjectDiscriminationComposite;
-import edu.american.huntsberry.compositeelement.ObjectDiscriminationElement;
 import edu.american.weiss.lafayette.Application;
 import edu.american.weiss.lafayette.chamber.UserInterface;
 import edu.american.weiss.lafayette.chamber.UserInterfaceFactory;
 import edu.american.weiss.lafayette.composite.Composite;
-import edu.american.weiss.lafayette.composite.CompositeElement;
-import edu.american.weiss.lafayette.event.ChamberEvent;
-import edu.american.weiss.lafayette.event.ResponseEvent;
 import edu.american.weiss.lafayette.experiment.BaseExperimentImpl;
 
 public class ObjectDiscrimination extends BaseExperimentImpl {
@@ -24,6 +20,8 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 	private int trialsPerBlock;
 	private int currentTrial;
 	private int iti;
+	
+	private int compositeCounter = 0;
 	
 	private Image correctImage;
 	private Image incorrectImage;
@@ -42,8 +40,6 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 		
 		correctImage = tk.getImage(Application.getProperty("correct_image_path"));
 		incorrectImage = tk.getImage(Application.getProperty("incorrect_image_path"));
-		
-		Application.getEventController().registerEventListener(this);
 		
 	}
 
@@ -64,20 +60,30 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 
 	public Composite getNextComposite() {
 		
-		Composite comp = null;
+		if (compositeCounter > trials) {
+			return null;
+		}
 		
-		if (currentTrial < trials) {
-			
-			currentTrial++;
+		Composite comp;
+		
+		if (compositeCounter == 0) {
 			
 			comp = new ObjectDiscriminationComposite(ui, ui.getResponseSize(), correctImage, incorrectImage);
 	        comp.setType(Composite.ACTIVE_COMPOSITE);
 			comp.setDuration(5000);
 			comp.setGroupName("od");
 			
+		} else {
+				
+			comp = new ObjectDiscriminationComposite(ui, ui.getResponseSize(), correctImage, incorrectImage);
+		    comp.setType(Composite.ACTIVE_COMPOSITE);
+			comp.setDuration(5000);
+			comp.setGroupName("od");
+			
 		}
 		
 		lastResponseWasCorrect = false;
+		compositeCounter++;
 		
 		return comp;
 		
@@ -108,24 +114,8 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 		return false;
 	}
 	
-	public void handleChamberEvent(ChamberEvent ce) {
-		super.handleChamberEvent(ce);
-		if (ce instanceof ResponseEvent) {
-			ResponseEvent re = (ResponseEvent) ce;
-			Composite comp = re.getActiveComposite();
-			CompositeElement el = comp.getActiveCompositeElement(re.getX(), re.getY());
-			if (el instanceof ObjectDiscriminationElement) {
-				ObjectDiscriminationElement ode = (ObjectDiscriminationElement) el;
-				ObjectDiscriminationComposite odc = (ObjectDiscriminationComposite) comp;
-				if (ode.isCorrect()) {
-					lastResponseWasCorrect = true;
-					odc.setStatus("correct");
-				} else {
-					lastResponseWasCorrect = false;
-					odc.setStatus("incorrect");
-				}
-			}
-		}
+	public void setLastResponseWasCorrect(boolean wasCorrect) {
+		lastResponseWasCorrect = wasCorrect;
 	}
 
 }

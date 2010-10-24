@@ -10,11 +10,14 @@ import java.util.List;
 import java.util.Random;
 
 import edu.american.huntsberry.compositeelement.ObjectDiscriminationElement;
+import edu.american.huntsberry.experiment.ObjectDiscrimination;
 import edu.american.weiss.lafayette.Application;
 import edu.american.weiss.lafayette.actions.AudioAction;
 import edu.american.weiss.lafayette.actions.HopperAction;
+import edu.american.weiss.lafayette.actions.RestAction;
 import edu.american.weiss.lafayette.chamber.UserInterface;
 import edu.american.weiss.lafayette.composite.BaseComposite;
+import edu.american.weiss.lafayette.composite.BaseCompositeAction;
 import edu.american.weiss.lafayette.composite.CompositeAction;
 import edu.american.weiss.lafayette.composite.CompositeController;
 import edu.american.weiss.lafayette.composite.CompositeElement;
@@ -29,6 +32,20 @@ public class ObjectDiscriminationComposite extends BaseComposite implements Imag
     private UserInterface ui;
     
     private String status = "refused";
+    
+    private class ODAction extends BaseCompositeAction {	
+    	private boolean isCorrect;
+    	private ObjectDiscrimination odExp;
+		public ODAction(boolean isCorrect) {
+			super();
+			this.isCorrect = isCorrect;
+			odExp = (ObjectDiscrimination) Application.getExperiment();
+		}
+		public void run() {
+			odExp.setLastResponseWasCorrect(isCorrect);
+		}
+		public boolean runAsThread() { return false; }
+	}
     
     public ObjectDiscriminationComposite(UserInterface ui, Dimension d, Image cImg, Image iImg) {
 		super(ui);
@@ -90,8 +107,10 @@ public class ObjectDiscriminationComposite extends BaseComposite implements Imag
 		ce.setShape(p);
 		ce.setBackgroundColor(Color.BLACK);
 		ce.setOutlineColor(Color.BLACK);
+		
 		if (isCorrect) {
 			ce.setGroupName("correct");
+			ce.addCompositeAction(new ODAction(isCorrect));
 			ce.addCompositeAction(
 				new AudioAction(
 					Application.getProperty("correct_response_wav")));
@@ -100,10 +119,13 @@ public class ObjectDiscriminationComposite extends BaseComposite implements Imag
 					Application.getIntProperty("reinforcement_duration")));
 		} else {
 			ce.setGroupName("incorrect");
+			ce.addCompositeAction(new ODAction(isCorrect));
 			ce.addCompositeAction(
 				new AudioAction(
 					Application.getProperty("incorrect_response_wav")));
 		}
+		
+		ce.addCompositeAction(new RestAction());
 
 		addCompositeElement(ce);
 		
@@ -115,15 +137,6 @@ public class ObjectDiscriminationComposite extends BaseComposite implements Imag
 		return infoflags != ImageObserver.ALLBITS;
 	}
 	
-	public List<CompositeAction> getActions(int x, int y) {
-		List<CompositeAction> actions = super.getActions(x, y);
-		if (actions.size() > 0) {
-			cc.setCompositeDuration(1);
-		}
-		ui.writeMessage("actions:" + actions.size());
-    	return actions; 
-    }
-	
 	public String getStatus() {
 		return status;
 	}
@@ -133,3 +146,4 @@ public class ObjectDiscriminationComposite extends BaseComposite implements Imag
 	}
 
 }
+

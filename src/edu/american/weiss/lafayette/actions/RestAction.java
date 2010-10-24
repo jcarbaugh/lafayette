@@ -8,16 +8,18 @@ public class RestAction extends BaseCompositeAction {
 
 	private CompositeController cc;
 	
+	public RestAction() {
+		super();
+		cc = Application.getCompositeController();
+	}
+	
 	public boolean runAsThread() {
 		return false;
 	}
 
 	public void run() {
-		if (cc == null) {
-			cc = Application.getCompositeController();
-		}
 		cc.forceRest();
-		cc.setCompositeDuration(-1);
+		cc.forceChange();
 	}
 
 }

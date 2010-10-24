@@ -27,7 +27,8 @@ public class CompositeController implements KeyListener, MouseListener, Runnable
     protected Composite currentComposite;
     protected Experiment exp;
     private Random rand;
-    private boolean isForcedRest;
+    private boolean isForcedChange = false;
+    private boolean isForcedRest = false;
     
     public CompositeController(Experiment exp) {
         this.exp = exp;
@@ -102,8 +103,10 @@ public class CompositeController implements KeyListener, MouseListener, Runnable
         	
         	now = System.currentTimeMillis();
         	
-        	if (compositeDuration != 0 &&
-        			compositeDuration < (now - compositeStartTime)) {
+        	if (isForcedChange || (compositeDuration != 0 &&
+        			compositeDuration < (now - compositeStartTime))) {
+        		
+        		isForcedChange = false;
         		
         		if (hopper != null && hopper.isActive() &&
         				exp.isReinforcementWaiting()) {
@@ -171,6 +174,10 @@ public class CompositeController implements KeyListener, MouseListener, Runnable
     
     public void setCompositeDuration(long duration) {
     	compositeDuration = duration;
+    }
+    
+    public void forceChange() {
+    	isForcedChange = true;
     }
     
     public void forceRest() {

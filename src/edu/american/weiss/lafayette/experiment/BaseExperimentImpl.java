@@ -52,10 +52,10 @@ public abstract class BaseExperimentImpl implements Experiment {
 		if (ce instanceof ResponseEvent) {
 			ResponseEvent re = (ResponseEvent) ce;
 			Composite comp = re.getActiveComposite();
-			List as = comp.getActions(re.getX(), re.getY());
-			Iterator it = as.iterator();
+			List<CompositeAction> as = comp.getActions(re.getX(), re.getY());
+			Iterator<CompositeAction> it = as.iterator();
 			while (it.hasNext()) {
-				CompositeAction ca = (CompositeAction) it.next();
+				CompositeAction ca = it.next();
 				if (ca instanceof Reinforcer) {
 					((Reinforcer) ca).setComposite(comp);
 				}
