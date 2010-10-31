@@ -26,6 +26,7 @@
 
 	<target name="compile" depends="init" description="compile the source ">
 		<javac srcdir="${dir.src}" destdir="${dir.build}" />
+		<javah destdir="${dir.lib}" class="edu.american.weiss.lafayette.io.jni.AduJava"  classpathref="lafayette.classpath"/>
 	</target>
 
 	<target name="dist" depends="compile" description="generate the distribution">
