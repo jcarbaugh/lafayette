@@ -13,8 +13,8 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  
 public class Audio extends Thread { 
  
+	private boolean isMuted = false;
     private String filename;
- 
     private Position curPosition;
  
     private final int EXTERNAL_BUFFER_SIZE = 524288; // 128Kb 
@@ -26,6 +26,14 @@ public class Audio extends Thread {
     public Audio(String wavfile) { 
         filename = wavfile;
         curPosition = Position.NORMAL;
+    }
+    
+    public boolean isMuted() {
+    	return isMuted;
+    }
+    
+    public void setMuted(boolean isMuted) {
+    	this.isMuted = isMuted;
     }
  
     public void run() { 
@@ -70,6 +78,14 @@ public class Audio extends Thread {
             else if (curPosition == Position.LEFT) 
                 pan.setValue(-1.0f);
         } 
+        
+        if (auline.isControlSupported(FloatControl.Type.VOLUME)) {
+        	FloatControl vol = (FloatControl) auline
+        			.getControl(FloatControl.Type.VOLUME);
+        	if (isMuted) {
+        		vol.setValue(vol.getMinimum());
+        	}
+        }
  
         auline.start();
         int nBytesRead = 0;

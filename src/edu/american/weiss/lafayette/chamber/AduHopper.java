@@ -2,11 +2,19 @@ package edu.american.weiss.lafayette.chamber;
 
 import edu.american.weiss.lafayette.Application;
 import edu.american.weiss.lafayette.event.ReinforcerCompleteEvent;
+import edu.american.weiss.lafayette.io.jni.AduJava;
 
 public class AduHopper extends AbstractHopper {
 	
+	private AduJava adu;
+	
 	private AduHopper() {
-		
+		try {
+			adu = AduJava.getInstance();
+		} catch (Exception e) {
+    		System.err.println("!!! Hopper not found!");
+			System.out.println(e.getMessage());
+		}
 	}
 
 	public static synchronized Hopper getInstance() {
@@ -23,6 +31,10 @@ public class AduHopper extends AbstractHopper {
 		boolean activated = false;
     	
         if (!activated) {
+        	
+        	try {
+        		adu.activateHopper();
+        	} catch (NullPointerException npe) { }
         		
         	this.duration = duration;
         	this.startTime = System.currentTimeMillis();
@@ -37,8 +49,15 @@ public class AduHopper extends AbstractHopper {
 	}
 
 	public void deactivateHopper() {
-		Application.getEventController().notifyListeners(new ReinforcerCompleteEvent());
-		this.isActive = false;
+		
+		try {
+			adu.deactivateHopper();
+		} catch (NullPointerException npe) {
+		} finally {
+			Application.getEventController().notifyListeners(new ReinforcerCompleteEvent());
+			this.isActive = false;
+		}
+		
 	}
 
 }

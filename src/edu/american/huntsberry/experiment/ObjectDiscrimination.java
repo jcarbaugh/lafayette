@@ -18,7 +18,6 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 	private UserInterface ui;
 	private int trials;
 	private int trialsPerBlock;
-	private int currentTrial;
 	private int iti;
 	
 	private int compositeCounter = 0;
@@ -34,7 +33,6 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 		trials = Application.getIntProperty("trials");
 		trialsPerBlock = Application.getIntProperty("trials_per_block");
 		iti = Application.getIntProperty("iti");
-		currentTrial = 0;
 		
 		Toolkit tk = Toolkit.getDefaultToolkit();
 		
