@@ -1,0 +1,1 @@
+java -Xmx512m -cp conf;lib;lib\lafayette.jar; edu.american.weiss.lafayette.Application %1 > logs/run.log
