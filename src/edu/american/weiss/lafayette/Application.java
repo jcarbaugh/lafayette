@@ -18,7 +18,6 @@ import edu.american.weiss.lafayette.chamber.HopperListener;
 import edu.american.weiss.lafayette.chamber.UserInterface;
 import edu.american.weiss.lafayette.chamber.UserInterfaceFactory;
 import edu.american.weiss.lafayette.composite.CompositeController;
-import edu.american.weiss.lafayette.data.DataRecorderListener;
 import edu.american.weiss.lafayette.data.DataRecorder;
 import edu.american.weiss.lafayette.data.EventRecorderListener;
 import edu.american.weiss.lafayette.data.ResponseRecorderListener;
@@ -30,6 +29,7 @@ import edu.american.weiss.lafayette.event.listener.ChamberEventListener;
 import edu.american.weiss.lafayette.experiment.Experiment;
 import edu.american.weiss.lafayette.experiment.test.TestExperimentImpl;
 import edu.american.weiss.lafayette.gui.ProcessingFrame;
+import edu.american.weiss.lafayette.io.jni.ADUController;
 
 /**
  * @author jeremy
@@ -44,7 +44,7 @@ public class Application {
 	
 	private static Properties props;
 		
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 
 	    try {
 	    	
@@ -91,6 +91,8 @@ public class Application {
 	    		exp = new TestExperimentImpl();
 	    		cc = new CompositeController(exp);
 	    	}
+	    	
+	    	ADUController.getInstance();
 
 	    	controller.registerEventListener(ui);
 	    	

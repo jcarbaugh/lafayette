@@ -1,14 +1,15 @@
 package edu.american.weiss.lafayette.io.jni;
 
+
 import java.net.URL;
 
 import edu.american.weiss.lafayette.Application;
 
-public class AduJava {
+public class ADUController {
 	
 	static {
-    	URL dllPath = Application.class.getClassLoader().getResource("AduJava.dll");
-		System.load(dllPath.getFile().substring(1));
+    	URL dllPath = Application.class.getClassLoader().getResource("adu.dll");
+    	System.load(dllPath.getFile().substring(1));
 	}
 
 	public native int displayVersion();
@@ -19,9 +20,9 @@ public class AduJava {
 	
 	private int relay;
 	private int handle;
-	private static AduJava adu = null;
+	private static ADUController adu = null;
 	
-	private AduJava() throws Exception {
+	private ADUController() throws Exception {
 		
 		Application.loadProperties("adu.properties");
 		
@@ -36,9 +37,9 @@ public class AduJava {
 		}
 	}
 	
-	public static synchronized AduJava getInstance() throws Exception {
+	public static synchronized ADUController getInstance() throws Exception {
 		if (adu == null) {
-			adu = new AduJava(); 
+			adu = new ADUController(); 
 		}
 		return adu;
 	}

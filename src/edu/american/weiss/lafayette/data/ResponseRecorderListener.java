@@ -1,6 +1,5 @@
 package edu.american.weiss.lafayette.data;
 
-import java.io.File;
 import java.io.FileOutputStream;
 
 import edu.american.weiss.lafayette.Application;

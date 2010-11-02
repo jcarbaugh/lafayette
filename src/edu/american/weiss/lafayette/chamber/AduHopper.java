@@ -2,15 +2,15 @@ package edu.american.weiss.lafayette.chamber;
 
 import edu.american.weiss.lafayette.Application;
 import edu.american.weiss.lafayette.event.ReinforcerCompleteEvent;
-import edu.american.weiss.lafayette.io.jni.AduJava;
+import edu.american.weiss.lafayette.io.jni.ADUController;
 
 public class AduHopper extends AbstractHopper {
 	
-	private AduJava adu;
+	private ADUController adu;
 	
 	private AduHopper() {
 		try {
-			adu = AduJava.getInstance();
+			adu = ADUController.getInstance();
 		} catch (Exception e) {
     		System.err.println("!!! Hopper not found!");
 			System.out.println(e.getMessage());
