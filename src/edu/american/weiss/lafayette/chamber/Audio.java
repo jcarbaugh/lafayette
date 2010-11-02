@@ -15,17 +15,11 @@ public class Audio extends Thread {
  
 	private boolean isMuted = false;
     private String filename;
-    private Position curPosition;
  
-    private final int EXTERNAL_BUFFER_SIZE = 524288; // 128Kb 
- 
-    enum Position { 
-        LEFT, RIGHT, NORMAL
-    };
+    private final int EXTERNAL_BUFFER_SIZE = 524288; // 128Kb
  
     public Audio(String wavfile) { 
         filename = wavfile;
-        curPosition = Position.NORMAL;
     }
     
     public boolean isMuted() {
@@ -68,16 +62,7 @@ public class Audio extends Thread {
         } catch (Exception e) { 
             e.printStackTrace();
             return;
-        } 
- 
-        if (auline.isControlSupported(FloatControl.Type.PAN)) { 
-            FloatControl pan = (FloatControl) auline
-                    .getControl(FloatControl.Type.PAN);
-            if (curPosition == Position.RIGHT) 
-                pan.setValue(1.0f);
-            else if (curPosition == Position.LEFT) 
-                pan.setValue(-1.0f);
-        } 
+        }
         
         if (auline.isControlSupported(FloatControl.Type.VOLUME)) {
         	FloatControl vol = (FloatControl) auline

@@ -91,8 +91,6 @@ public class Application {
 	    		exp = new TestExperimentImpl();
 	    		cc = new CompositeController(exp);
 	    	}
-	    	
-	    	ADUController.getInstance();
 
 	    	controller.registerEventListener(ui);
 	    	

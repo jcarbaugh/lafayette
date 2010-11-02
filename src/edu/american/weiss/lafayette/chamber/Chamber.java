@@ -24,8 +24,8 @@ public class Chamber {
             Method mthd = cls.getMethod("getInstance");
             this.hopper = (Hopper) mthd.invoke(null);
         } catch (Exception e) {
-        	System.out.println("!!!!!" + e);
-        	// couldn't create hopper. oh well?
+        	System.out.println("!!!!! hopper error: " + e);
+        	this.hopper = MockHopper.getInstance();
         }
     }
     

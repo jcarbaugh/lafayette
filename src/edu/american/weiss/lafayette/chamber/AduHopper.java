@@ -23,7 +23,7 @@ public class AduHopper extends AbstractHopper {
             Thread t = new Thread(hopper);
             t.start();
     	}
-        return hopper;
+		return hopper;
 	}
 	
 	public boolean activateHopper(long duration) {
