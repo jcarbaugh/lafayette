@@ -40,7 +40,6 @@
 				<attribute name="Main-Class" value="${class.main}" />
 			</manifest>
 		</jar>
-		<!-- copy conf -->
 		<copy todir="${dir.dist}/conf">
 			<fileset dir="${dir.conf}" />
 		</copy>
@@ -54,11 +53,15 @@
 		<copy file="run.bat" todir="${dir.dist}" />
 		<copy file="run.sh" todir="${dir.dist}" />
 		<chmod file="${dir.dist}/run.sh" perm="ugo+rx"/>
+		<zip destfile="lafayette-${DSTAMP}.zip" basedir="${dir.dist}" update="true" />
 	</target>
 
 	<target name="clean" description="clean up">
-		<delete dir="${dir.build}" />
-		<delete dir="${dir.dist}" />
+		<delete quiet="true" dir="${dir.build}" />
+		<delete quiet="true" dir="${dir.dist}" />
+		<delete quiet="true">
+			<fileset dir="." includes="lafayette-*.zip"/>
+		</delete>
 	</target>
 
 	<target name="run" depends="compile" description="run from compiled source">
