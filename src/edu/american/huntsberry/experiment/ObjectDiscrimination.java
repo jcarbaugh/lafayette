@@ -9,6 +9,8 @@ import edu.american.huntsberry.composite.ColorComposite;
 import edu.american.huntsberry.composite.ObjectDiscriminationComposite;
 import edu.american.huntsberry.composite.StartComposite;
 import edu.american.weiss.lafayette.Application;
+import edu.american.weiss.lafayette.chamber.AudioFile;
+import edu.american.weiss.lafayette.chamber.AudioPlayer;
 import edu.american.weiss.lafayette.chamber.UserInterface;
 import edu.american.weiss.lafayette.chamber.UserInterfaceFactory;
 import edu.american.weiss.lafayette.composite.Composite;
@@ -25,7 +27,6 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 	
 	private Image correctImage;
 	private Image incorrectImage;
-	
 	private boolean lastResponseWasCorrect = true;
 	
 	public ObjectDiscrimination() {
@@ -39,6 +40,10 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 		
 		correctImage = tk.getImage(Application.getProperty("correct_image_path"));
 		incorrectImage = tk.getImage(Application.getProperty("incorrect_image_path"));
+		
+		AudioPlayer ap = AudioPlayer.getInstance();
+		ap.addTrack("od.correct", Application.getProperty("correct_response_wav"));
+		ap.addTrack("od.incorrect", Application.getProperty("incorrect_response_wav"));
 		
 	}
 

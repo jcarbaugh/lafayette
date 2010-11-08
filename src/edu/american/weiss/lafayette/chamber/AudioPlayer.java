@@ -1,25 +1,48 @@
 package edu.american.weiss.lafayette.chamber;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.sound.sampled.AudioInputStream;
-
-public class AudioPlayer implements Runnable {
+public class AudioPlayer {
 
 	private static AudioPlayer instance;
-	private List<AudioInputStream> queue;
+	
+	private Map<String, AudioFile> cache;
+	private boolean isRunning = true;
 	
 	static {
 		instance = new AudioPlayer();
 	}
 	
 	private AudioPlayer() {
-		queue = new ArrayList<AudioInputStream>();
+		cache = new HashMap<String, AudioFile>();
 	}
 	
-	public void run() {
-		
+	public static AudioPlayer getInstance() {
+		return instance;
+	}
+	
+	public void addTrack(String id, String path) {
+		AudioFile af = new AudioFile(path);
+		cache.put(id, af);
+	}
+	
+	public void addTrack(String id, AudioFile af) {
+		cache.put(id, af);
+	}
+	
+	public AudioFile getTrack(String id) {
+		return cache.get(id);
+	}
+	
+	public void playTrack(String id) {
+		getTrack(id).play();
+	}
+	
+	public void close() {
+		for (AudioFile af : cache.values()) {
+			af.destroy();
+		}
 	}
 	
 }

@@ -34,10 +34,12 @@ public class UserInterface extends JFrame implements ChamberEventListener {
 
 	private static final long serialVersionUID = -8345425150947645683L;
 	private static final String SHOW_CURSOR_PROPERTY_KEY = "show_cursor";
+	private static final String SHOW_DEBUGBAR_PROPERTY_KEY = "show_debugbar";
 	
     private boolean isFullScreen    = false;
     private boolean isInitialized   = false;
     private boolean showCursor		= false;
+    private boolean showDebugBar	= false;
     
     private int screenResolution;
     
@@ -67,6 +69,7 @@ public class UserInterface extends JFrame implements ChamberEventListener {
     	listener = new InputListener();
     	
     	showCursor = Application.getBooleanProperty(SHOW_CURSOR_PROPERTY_KEY);
+    	showDebugBar = Application.getBooleanProperty(SHOW_DEBUGBAR_PROPERTY_KEY);
 	    
     }
 
@@ -100,16 +103,22 @@ public class UserInterface extends JFrame implements ChamberEventListener {
         lblStatus = new JLabel();
         lblStatus.setForeground(Color.WHITE);
 
-        JPanel exitPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        exitPanel.add(pnlHopperIndicator);
-        exitPanel.add(btnExit);
-        exitPanel.add(lblStatus);
-        exitPanel.setBackground(Color.BLACK);
-
         pnlResponseArea.setBackground(Color.WHITE);
 
         c.setLayout(new BorderLayout());
-        c.add(exitPanel, BorderLayout.SOUTH);
+        
+        if (showDebugBar) {
+        	
+        	JPanel exitPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            exitPanel.add(pnlHopperIndicator);
+            exitPanel.add(btnExit);
+            exitPanel.add(lblStatus);
+            exitPanel.setBackground(Color.BLACK);
+            
+        	c.add(exitPanel, BorderLayout.SOUTH);
+        	
+        }
+        
         c.add(pnlResponseContainer, BorderLayout.CENTER);
 
         setContentPane(c);

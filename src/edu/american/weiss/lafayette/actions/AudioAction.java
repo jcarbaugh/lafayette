@@ -1,14 +1,16 @@
 package edu.american.weiss.lafayette.actions;
 
-import edu.american.weiss.lafayette.chamber.Audio;
+import edu.american.weiss.lafayette.chamber.AudioPlayer;
 import edu.american.weiss.lafayette.composite.BaseCompositeAction;
 
 public class AudioAction extends BaseCompositeAction {
 	
-	private String audioPath;
+	private AudioPlayer audioPlayer;
+	private String audioId;
 	
-	public AudioAction(String audioPath) {
-		this.audioPath = audioPath;
+	public AudioAction(String audioId) {
+		this.audioId = audioId;
+		this.audioPlayer = AudioPlayer.getInstance();
 	}
 
 	public boolean runAsThread() {
@@ -16,7 +18,7 @@ public class AudioAction extends BaseCompositeAction {
 	}
 
 	public void run() {
-		new Audio(audioPath).start();
+		audioPlayer.playTrack(audioId);
 	}
 
 }
