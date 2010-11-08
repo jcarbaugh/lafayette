@@ -5,8 +5,10 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.RenderingHints;
 
+import edu.american.weiss.lafayette.ImageManager;
 import edu.american.weiss.lafayette.actions.NextCompositeAction;
 import edu.american.weiss.lafayette.actions.RestAction;
 import edu.american.weiss.lafayette.chamber.UserInterface;
@@ -42,6 +44,10 @@ public class StartComposite extends BlackComposite {
 		g2.drawString(MESSAGE,
 			(d.width - fm.stringWidth(MESSAGE)) / 2,
 			(d.height - 50) / 2);
+		
+		for (Image img : ImageManager.getInstance().getImages()) {
+			g2.drawImage(img, -10000, -10000, null);
+		}
 
 	}
 

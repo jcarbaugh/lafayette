@@ -9,6 +9,7 @@ import edu.american.huntsberry.composite.ColorComposite;
 import edu.american.huntsberry.composite.ObjectDiscriminationComposite;
 import edu.american.huntsberry.composite.StartComposite;
 import edu.american.weiss.lafayette.Application;
+import edu.american.weiss.lafayette.ImageManager;
 import edu.american.weiss.lafayette.chamber.AudioFile;
 import edu.american.weiss.lafayette.chamber.AudioPlayer;
 import edu.american.weiss.lafayette.chamber.UserInterface;
@@ -24,9 +25,6 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 	private int iti;
 	
 	private int compositeCounter = 0;
-	
-	private Image correctImage;
-	private Image incorrectImage;
 	private boolean lastResponseWasCorrect = true;
 	
 	public ObjectDiscrimination() {
@@ -36,14 +34,13 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 		trialsPerBlock = Application.getIntProperty("trials_per_block");
 		iti = Application.getIntProperty("iti");
 		
-		Toolkit tk = Toolkit.getDefaultToolkit();
-		
-		correctImage = tk.getImage(Application.getProperty("correct_image_path"));
-		incorrectImage = tk.getImage(Application.getProperty("incorrect_image_path"));
-		
 		AudioPlayer ap = AudioPlayer.getInstance();
 		ap.addTrack("od.correct", Application.getProperty("correct_response_wav"));
 		ap.addTrack("od.incorrect", Application.getProperty("incorrect_response_wav"));
+		
+		ImageManager im = ImageManager.getInstance();
+		im.loadImage("od.correct", Application.getProperty("correct_image_path"));
+		im.loadImage("od.incorrect", Application.getProperty("incorrect_image_path"));
 		
 	}
 
@@ -67,8 +64,7 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 			return null;
 		}
 				
-		Composite comp = new ObjectDiscriminationComposite(
-			ui, ui.getResponseSize(), correctImage, incorrectImage);
+		Composite comp = new ObjectDiscriminationComposite(ui, ui.getResponseSize());
 		comp.setType(Composite.ACTIVE_COMPOSITE);
 		comp.setDuration(5000);
 		comp.setGroupName("od");

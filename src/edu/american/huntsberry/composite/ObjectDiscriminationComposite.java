@@ -12,6 +12,7 @@ import java.util.Random;
 import edu.american.huntsberry.compositeelement.ObjectDiscriminationElement;
 import edu.american.huntsberry.experiment.ObjectDiscrimination;
 import edu.american.weiss.lafayette.Application;
+import edu.american.weiss.lafayette.ImageManager;
 import edu.american.weiss.lafayette.actions.AudioAction;
 import edu.american.weiss.lafayette.actions.HopperAction;
 import edu.american.weiss.lafayette.actions.RestAction;
@@ -26,10 +27,9 @@ public class ObjectDiscriminationComposite extends BaseComposite implements Imag
     
 	private CompositeController cc;
     private Dimension d;
-    private Image correctImage;
-    private Image incorrectImage;
     private Random rand = new Random();
     private UserInterface ui;
+    private ImageManager im;
     
     private String status = "refused";
     
@@ -47,12 +47,11 @@ public class ObjectDiscriminationComposite extends BaseComposite implements Imag
 		public boolean runAsThread() { return false; }
 	}
     
-    public ObjectDiscriminationComposite(UserInterface ui, Dimension d, Image cImg, Image iImg) {
+    public ObjectDiscriminationComposite(UserInterface ui, Dimension d) {
 		super(ui);
 		this.d = d;
 		this.ui = ui;
-		this.correctImage = cImg;
-		this.incorrectImage = iImg;
+		im = ImageManager.getInstance();
 	}
 
 	public void init(Graphics2D g2, CompositeController cc) {
@@ -83,8 +82,8 @@ public class ObjectDiscriminationComposite extends BaseComposite implements Imag
 			qWidth = qWidth * -1;
 		}
 		
-		drawImage(g2, correctImage, -qWidth, 0, true);
-		drawImage(g2, incorrectImage, qWidth, 0, false);
+		drawImage(g2, im.getImage("od.correct"), -qWidth, 0, true);
+		drawImage(g2, im.getImage("od.incorrect"), qWidth, 0, false);
 
 	}
 	
