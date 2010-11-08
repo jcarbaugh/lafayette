@@ -29,16 +29,31 @@
 		<javah destdir="${dir.lib}" class="edu.american.weiss.lafayette.io.jni.ADUController"  classpathref="lafayette.classpath"/>
 	</target>
 
-	<target name="dist" depends="compile" description="generate the distribution">
+	<target name="dist" depends="clean, compile" description="generate the distribution">
+		<mkdir dir="${dir.dist}/conf" />
 		<mkdir dir="${dir.dist}/lib" />
+		<mkdir dir="${dir.dist}/logs" />
 		<!-- ${DSTAMP} -->
 		<jar destfile="${dir.dist}/lib/lafayette.jar">
 			<fileset dir="${dir.build}" includes="**/*.class" />
-			<fileset dir="${dir.conf}" />
 			<manifest>
 				<attribute name="Main-Class" value="${class.main}" />
 			</manifest>
 		</jar>
+		<!-- copy conf -->
+		<copy todir="${dir.dist}/conf">
+			<fileset dir="${dir.conf}" />
+		</copy>
+		<copy todir="${dir.dist}/lib">
+			<fileset dir="${dir.lib}">
+				<include name="**/*.dll" />
+				<include name="**/*.jar" />
+				<include name="**/*.lib" />
+			</fileset>
+		</copy>
+		<copy file="run.bat" todir="${dir.dist}" />
+		<copy file="run.sh" todir="${dir.dist}" />
+		<chmod file="${dir.dist}/run.sh" perm="ugo+rx"/>
 	</target>
 
 	<target name="clean" description="clean up">
