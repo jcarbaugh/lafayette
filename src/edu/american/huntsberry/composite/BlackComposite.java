@@ -13,14 +13,10 @@ import edu.american.weiss.lafayette.composite.BaseCompositeElement;
 import edu.american.weiss.lafayette.composite.CompositeElement;
 
 public class BlackComposite extends BaseComposite {
-    
-    private Dimension d;
-    private UserInterface ui;
 	
 	public BlackComposite(UserInterface ui, Dimension d) {
 		super(ui);
 		this.d = d;
-		this.ui = ui;
 	}
 	
 	public void init(Graphics2D g2, CompositeController cc) { 
@@ -45,6 +41,8 @@ public class BlackComposite extends BaseComposite {
 		ce.setShape(p);
 		ce.setBackgroundColor(Color.BLACK);
 		ce.setOutlineColor(Color.BLACK);
+		
+		this.addCompositeElement(ce);
 		
 		g2.setPaint(ce.getBackgroundColor());
 		g2.fill(ce.getShape());

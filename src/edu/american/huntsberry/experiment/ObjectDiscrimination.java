@@ -7,6 +7,7 @@ import java.awt.Toolkit;
 import edu.american.huntsberry.composite.BlackComposite;
 import edu.american.huntsberry.composite.ColorComposite;
 import edu.american.huntsberry.composite.ObjectDiscriminationComposite;
+import edu.american.huntsberry.composite.StartComposite;
 import edu.american.weiss.lafayette.Application;
 import edu.american.weiss.lafayette.chamber.UserInterface;
 import edu.american.weiss.lafayette.chamber.UserInterfaceFactory;
@@ -42,9 +43,8 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 	}
 
 	public Composite getInitialComposite() {
-		Composite comp = new BlackComposite(ui, ui.getResponseSize());
+		Composite comp = new StartComposite(ui, ui.getResponseSize());
 		comp.setType(Composite.INITIAL_COMPOSITE);
-		comp.setDuration(Application.getIntProperty("initial_duration"));
         comp.setId("initial");
 		return comp;
 	}
@@ -58,27 +58,15 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 
 	public Composite getNextComposite() {
 		
-		if (compositeCounter > trials) {
+		if (compositeCounter >= trials) {
 			return null;
 		}
-		
-		Composite comp;
-		
-		if (compositeCounter == 0) {
-			
-			comp = new ObjectDiscriminationComposite(ui, ui.getResponseSize(), correctImage, incorrectImage);
-	        comp.setType(Composite.ACTIVE_COMPOSITE);
-			comp.setDuration(5000);
-			comp.setGroupName("od");
-			
-		} else {
 				
-			comp = new ObjectDiscriminationComposite(ui, ui.getResponseSize(), correctImage, incorrectImage);
-		    comp.setType(Composite.ACTIVE_COMPOSITE);
-			comp.setDuration(5000);
-			comp.setGroupName("od");
-			
-		}
+		Composite comp = new ObjectDiscriminationComposite(
+			ui, ui.getResponseSize(), correctImage, incorrectImage);
+		comp.setType(Composite.ACTIVE_COMPOSITE);
+		comp.setDuration(5000);
+		comp.setGroupName("od");
 		
 		lastResponseWasCorrect = false;
 		compositeCounter++;

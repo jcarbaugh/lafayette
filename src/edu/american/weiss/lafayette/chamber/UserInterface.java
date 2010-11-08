@@ -39,6 +39,8 @@ public class UserInterface extends JFrame implements ChamberEventListener {
     private boolean isInitialized   = false;
     private boolean showCursor		= false;
     
+    private int screenResolution;
+    
     private DisplayMode originalDisplayMode;
     private GraphicsDevice device;
     private InputListener listener;
@@ -54,10 +56,12 @@ public class UserInterface extends JFrame implements ChamberEventListener {
     	
     	super(device.getDefaultConfiguration());
 	    
-        setTitle("Full Screen Test");
+        setTitle("Lafayette");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         originalDisplayMode = device.getDisplayMode();
+        
+        screenResolution = Toolkit.getDefaultToolkit().getScreenResolution();
     	
     	this.device = device;
     	listener = new InputListener();
@@ -156,6 +160,10 @@ public class UserInterface extends JFrame implements ChamberEventListener {
     public Dimension getScreenDimension() {
         //Graphics2D g2 = (Graphics2D) pnlResponseArea.getGraphics();
         return pnlResponseArea.getSize();
+    }
+    
+    public int getScreenResolution() {
+    	return screenResolution;
     }
     
     public void paint(Graphics g) {

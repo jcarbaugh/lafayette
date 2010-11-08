@@ -35,8 +35,7 @@ public abstract class BaseComposite implements Composite {
 	private String globalScheduleId;
 	protected List<CompositeElement> compositeElements;
 		
-    private UserInterface ui;
-    
+	protected UserInterface ui;
     protected Graphics2D g2d;
     protected BufferedImage bi;
     protected Dimension d;
