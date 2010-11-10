@@ -122,7 +122,7 @@ public abstract class BaseComposite implements Composite {
 		compositeElements.clear();
     }
 
-    /**
+	/**
      * @see edu.american.weiss.lafayette.composite.Composite#getComponentElements()
      */
     public List<CompositeElement> getCompositeElements() {

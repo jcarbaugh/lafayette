@@ -42,6 +42,8 @@ public class ObjectDiscriminationComposite extends BaseComposite implements Imag
 			odExp = (ObjectDiscrimination) Application.getExperiment();
 		}
 		public void run() {
+			ObjectDiscriminationComposite odc = (ObjectDiscriminationComposite) this.getCompositeElement().getComposite();
+			odc.setStatus((isCorrect) ? "correct" : "incorrect");
 			odExp.setLastResponseWasCorrect(isCorrect);
 		}
 		public boolean runAsThread() { return false; }

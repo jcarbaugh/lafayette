@@ -96,6 +96,13 @@ public class BaseCompositeElement implements CompositeElement {
     }
 
     /**
+     * @see edu.american.weiss.lafayette.composite.CompositeElement#getComposite()
+     */
+    public Composite getComposite() {
+		return c;
+    }
+    
+    /**
      * @see edu.american.weiss.lafayette.composite.CompositeElement#getComponentAction()
      */
     public List<CompositeAction> getCompositeActions() {

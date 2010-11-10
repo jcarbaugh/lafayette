@@ -2,6 +2,7 @@ package edu.american.weiss.lafayette.actions;
 
 import edu.american.weiss.lafayette.Application;
 import edu.american.weiss.lafayette.composite.BaseCompositeAction;
+import edu.american.weiss.lafayette.composite.Composite;
 import edu.american.weiss.lafayette.event.ReinforcerEvent;
 
 public class HopperRatioAction extends BaseCompositeAction implements Reinforcer {
@@ -9,6 +10,7 @@ public class HopperRatioAction extends BaseCompositeAction implements Reinforcer
 	private long duration;
 	private long responses;
 	private long responseThreshold;
+	private Composite c;
 	
 	public HopperRatioAction(long duration, long responseThreshold) {
 		this.duration = duration;
@@ -31,6 +33,10 @@ public class HopperRatioAction extends BaseCompositeAction implements Reinforcer
 			
 		}
 		
+	}
+	
+	public void setComposite(Composite c) {
+		this.c = c;
 	}
 
 }

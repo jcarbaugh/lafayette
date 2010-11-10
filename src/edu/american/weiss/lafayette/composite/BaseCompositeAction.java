@@ -13,12 +13,4 @@ public abstract class BaseCompositeAction implements CompositeAction {
 		this.compositeElement = compositeElement;
 	}
 
-	public Composite getComposite() {
-		return composite;
-	}
-
-	public void setComposite(Composite composite) {
-		this.composite = composite;
-	}
-
 }

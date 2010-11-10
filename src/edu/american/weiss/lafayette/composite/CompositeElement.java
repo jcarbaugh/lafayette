@@ -15,6 +15,7 @@ public interface CompositeElement {
 	public Color getBackgroundColor();
 	public void setBackgroundColor(Color c);
 	
+	public Composite getComposite();
 	public List<CompositeAction> getCompositeActions();
 	public void setCompositeActions(List<CompositeAction> actions);
 	public void addCompositeAction(CompositeAction ca);

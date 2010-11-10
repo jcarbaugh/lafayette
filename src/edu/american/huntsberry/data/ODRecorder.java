@@ -17,6 +17,7 @@ public class ODRecorder extends QueuedRecorder {
 	private FileOutputStream fos;
 	private int trialCounter = 0;
 	private long lastTransitionTime;
+	private long totalTransitionTime = 0;
 	
 	private int correctCounter = 0;
 	private int incorrectCounter = 0;
@@ -83,11 +84,16 @@ public class ODRecorder extends QueuedRecorder {
 				} else {
 					row.append(trialCounter);
 				}
+				
+				long transitionTime = ce.getEventTime() - lastTransitionTime;
+				
 				row.append("\t");
 				row.append(status);
 				row.append("\t");
-				row.append(ce.getEventTime() - lastTransitionTime);
+				row.append(transitionTime);
 				row.append("\n");
+				
+				totalTransitionTime += transitionTime;
 				
 				write(row.toString());
 				
@@ -103,7 +109,7 @@ public class ODRecorder extends QueuedRecorder {
 				footer.append("Number Correct:     " + correctCounter + "\n");
 				footer.append("Number Incorrect:   " + incorrectCounter + "\n");
 				footer.append("% Correct:          " + (((float) correctCounter / (float) trialCounter) * 100) + "\n");
-				footer.append("Mean Response Time: \n");
+				footer.append("Mean Response Time: " + ((float) totalTransitionTime / (float) trialCounter));
 				
 				write(footer.toString());
 				
