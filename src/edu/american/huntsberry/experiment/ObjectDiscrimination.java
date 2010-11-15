@@ -52,7 +52,7 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 	}
 
 	public Composite getFinalComposite() {
-		Composite comp = new BlackComposite(ui, ui.getResponseSize());
+		Composite comp = new ColorComposite(ui, ui.getResponseSize(), Color.RED);
         comp.setType(Composite.FINAL_COMPOSITE);
         comp.setId("final");
         return comp;
@@ -66,7 +66,7 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 				
 		Composite comp = new ObjectDiscriminationComposite(ui, ui.getResponseSize());
 		comp.setType(Composite.ACTIVE_COMPOSITE);
-		comp.setDuration(5000);
+		comp.setDuration(Application.getIntProperty("max_response_time"));
 		comp.setGroupName("od");
 		
 		lastResponseWasCorrect = false;
