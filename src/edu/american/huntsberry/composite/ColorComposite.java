@@ -14,8 +14,8 @@ import edu.american.weiss.lafayette.composite.CompositeElement;
 public class ColorComposite extends BaseComposite {
     
 	private Color c;
-    private Dimension d;
-    private UserInterface ui;
+    protected Dimension d;
+    protected UserInterface ui;
     
     public ColorComposite(UserInterface ui, Dimension d, Color c) {
 		super(ui);

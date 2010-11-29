@@ -111,7 +111,7 @@ public class ObjectDiscriminationComposite extends BaseComposite implements Imag
 		
 		if (isCorrect) {
 			ce.setGroupName("correct");
-			ce.addCompositeAction(new ODAction(isCorrect));
+			ce.addCompositeAction(new ODAction(true));
 			ce.addCompositeAction(
 				new AudioAction("od.correct"));
 			ce.addCompositeAction(
@@ -119,7 +119,7 @@ public class ObjectDiscriminationComposite extends BaseComposite implements Imag
 					Application.getIntProperty("reinforcement_duration")));
 		} else {
 			ce.setGroupName("incorrect");
-			ce.addCompositeAction(new ODAction(isCorrect));
+			ce.addCompositeAction(new ODAction(false));
 			ce.addCompositeAction(
 				new AudioAction("od.incorrect"));
 		}

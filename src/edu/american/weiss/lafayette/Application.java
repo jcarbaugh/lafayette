@@ -174,6 +174,14 @@ public class Application {
 		return Integer.parseInt(props.getProperty(key));
 	}
 	
+	public static int getIntProperty(String key, int def) {
+		try {
+			return getIntProperty(key);
+		} catch (NumberFormatException nfe) {
+			return def;
+		}
+	}
+	
 	public static boolean getBooleanProperty(String key) {
 		String value = props.getProperty(key);
 		boolean isTrue = false;
