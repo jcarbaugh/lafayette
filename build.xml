@@ -75,6 +75,13 @@
             <arg value="verbose:jni" />
 		</java>
 	</target>
+	
+	<target name="run-tb" depends="compile" description="run from compiled source">
+		<java classname="${class.main}" classpathref="lafayette.classpath" failonerror="true" fork="true">
+            <arg value="edu.american.huntsberry.experiment.TerminalBaseline" />
+            <arg value="verbose:jni" />
+		</java>
+	</target>
 
 	<target name="run-jar" depends="dist" description="run from jar">
 		<java jar="${dir.dist}/lib/lafayette.jar" failonerror="true" fork="true">

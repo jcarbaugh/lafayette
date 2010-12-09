@@ -39,7 +39,7 @@ public class ADUController {
 	
 	public static synchronized ADUController getInstance() throws Exception {
 		if (adu == null) {
-			adu = new ADUController(); 
+			adu = new ADUController();
 		}
 		return adu;
 	}

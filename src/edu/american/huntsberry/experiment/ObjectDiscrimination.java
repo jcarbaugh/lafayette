@@ -26,7 +26,6 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 	
 	private UserInterface ui;
 	private int trials;
-	private int trialsPerBlock;
 	private int iti;
 	private int state;
 	
@@ -43,7 +42,6 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 		
 		ui = UserInterfaceFactory.getUserInterfaceInstance();
 		trials = Application.getIntProperty("trials");
-		trialsPerBlock = Application.getIntProperty("trials_per_block");
 		iti = Application.getIntProperty("iti");
 		
 		criteriaTrials = Application.getIntProperty("criteria_trials", 20);
@@ -71,7 +69,7 @@ public class ObjectDiscrimination extends BaseExperimentImpl {
 		Composite comp;
 		if (criteriaMet()) {
 			String message = "CRITERIA MET";
-			comp = new MessageComposite(ui, ui.getResponseSize(), Color.DARK_GRAY, Color.WHITE, message);
+			comp = new MessageComposite(ui, ui.getResponseSize(), Color.ORANGE, Color.WHITE, message);
 		} else {
 			comp = new ColorComposite(ui, ui.getResponseSize(), Color.RED);
 		}
