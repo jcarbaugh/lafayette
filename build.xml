@@ -82,6 +82,13 @@
             <arg value="verbose:jni" />
 		</java>
 	</target>
+	
+	<target name="run-mts" depends="compile" description="run from compiled source">
+		<java classname="${class.main}" classpathref="lafayette.classpath" failonerror="true" fork="true">
+            <arg value="edu.american.huntsberry.experiment.MTS" />
+            <arg value="verbose:jni" />
+		</java>
+	</target>
 
 	<target name="run-jar" depends="dist" description="run from jar">
 		<java jar="${dir.dist}/lib/lafayette.jar" failonerror="true" fork="true">
