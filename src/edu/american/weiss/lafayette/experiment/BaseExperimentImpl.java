@@ -11,13 +11,14 @@ import edu.american.weiss.lafayette.composite.Composite;
 import edu.american.weiss.lafayette.composite.CompositeAction;
 import edu.american.weiss.lafayette.event.ChamberEvent;
 import edu.american.weiss.lafayette.event.ResponseEvent;
+import edu.american.weiss.lafayette.event.listener.ChamberEventListener;
 
 public abstract class BaseExperimentImpl implements Experiment {
 	
-	protected Collection eventListeners;
+	protected Collection<ChamberEventListener> eventListeners;
 	
 	public BaseExperimentImpl() {
-		eventListeners = new ArrayList();
+		eventListeners = new ArrayList<ChamberEventListener>();
 	}
 
 	public long getCorrectionDuration() {
@@ -44,7 +45,7 @@ public abstract class BaseExperimentImpl implements Experiment {
 		return 100;
 	}
 	
-	public Collection getEventListeners() {
+	public Collection<ChamberEventListener> getEventListeners() {
 		return eventListeners;
 	}
 	

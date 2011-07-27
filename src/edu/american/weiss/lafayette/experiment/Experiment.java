@@ -23,7 +23,7 @@ public interface Experiment extends ChamberEventListener {
     public boolean isReinforcementWaiting();
     public int getRestProbability();
     
-    public Collection getEventListeners();
+    public Collection<ChamberEventListener> getEventListeners();
     
     public void handleChamberEvent(ChamberEvent ce);
 

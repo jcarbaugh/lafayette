@@ -29,7 +29,6 @@ import edu.american.weiss.lafayette.event.listener.ChamberEventListener;
 import edu.american.weiss.lafayette.experiment.Experiment;
 import edu.american.weiss.lafayette.experiment.test.TestExperimentImpl;
 import edu.american.weiss.lafayette.gui.ProcessingFrame;
-import edu.american.weiss.lafayette.io.jni.ADUController;
 
 /**
  * @author jeremy
@@ -79,7 +78,7 @@ public class Application {
 	    		
 	    		controller.registerEventListener(exp);
 	    		
-	    		Iterator it = exp.getEventListeners().iterator();
+	    		Iterator<ChamberEventListener> it = exp.getEventListeners().iterator();
 	    		while (it.hasNext()) {
 	    			controller.registerEventListener(
 	    					(ChamberEventListener) it.next());

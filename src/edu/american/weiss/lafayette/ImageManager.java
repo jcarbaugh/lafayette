@@ -2,16 +2,15 @@ package edu.american.weiss.lafayette;
 
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.io.ByteArrayInputStream;
-import java.io.RandomAccessFile;
-import java.io.IOException;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class ImageManager {
 
@@ -39,6 +38,10 @@ public class ImageManager {
 		return null;
 	}
 	
+	public List<String> getIds() {
+		return new ArrayList<String>(cache.keySet());
+	}
+	
 	public Image getImage(String id) {
 		return (Image) get(id);
 	}
@@ -54,4 +57,34 @@ public class ImageManager {
 		}
 	}
 	
-}
+	public void loadDirectory(String dirPath) {
+		loadDirectory(dirPath, false);
+	}
+	
+	public void loadDirectory(String dirPath, boolean shuffle) {
+		if (!dirPath.endsWith("/")) {
+			dirPath += "/";
+		}
+		File dir = new File(dirPath);
+		List<String> paths = Arrays.asList(dir.list(imageFilter));
+		if (shuffle) {
+			Collections.shuffle(paths);
+		}
+		for (String path : paths) {
+			loadImage(path, dirPath + path);
+		}
+	}
+
+	FilenameFilter imageFilter = new FilenameFilter() {
+		public boolean accept(File dir, String name) {
+			name = name.toLowerCase();
+			return !name.startsWith(".") && (
+					name.endsWith(".bmp") ||
+					name.endsWith(".gif") ||
+					name.endsWith(".jpeg") ||
+					name.endsWith(".jpg") ||
+					name.endsWith(".png"));
+		}
+	};
+
+};

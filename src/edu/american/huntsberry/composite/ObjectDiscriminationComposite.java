@@ -6,7 +6,6 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Polygon;
 import java.awt.image.ImageObserver;
-import java.util.List;
 import java.util.Random;
 
 import edu.american.huntsberry.compositeelement.ObjectDiscriminationElement;
@@ -19,7 +18,6 @@ import edu.american.weiss.lafayette.actions.RestAction;
 import edu.american.weiss.lafayette.chamber.UserInterface;
 import edu.american.weiss.lafayette.composite.BaseComposite;
 import edu.american.weiss.lafayette.composite.BaseCompositeAction;
-import edu.american.weiss.lafayette.composite.CompositeAction;
 import edu.american.weiss.lafayette.composite.CompositeController;
 import edu.american.weiss.lafayette.composite.CompositeElement;
 
