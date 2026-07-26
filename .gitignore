@@ -2,8 +2,8 @@ bin/
 build/
 dist/
 lib/
-logs/
-media/
+logs/*
+!logs/.gitkeep
 .classpath
 .project
 *.javac

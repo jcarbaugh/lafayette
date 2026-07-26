@@ -62,7 +62,9 @@ java -cp conf:build edu.american.weiss.lafayette.Application \
 ```
 
 `conf/` must be on the classpath, since properties are loaded as classpath resources, not
-as files. `logs/` must exist; nothing creates it.
+as files. `logs/` must exist; nothing creates it, so an empty one is tracked in the repo.
+Both `log_path` and the `ObjectDiscrimination` media paths are relative to the working
+directory, so run from the repository root.
 
 With no argument, `Application` runs the built-in `TestExperimentImpl` demo.
 
@@ -337,7 +339,7 @@ Both sets are commented out of `Application`'s imports and wiring (see below).
 
 What the crash and the passage of time cost, roughly in order of how much it matters:
 
-**Missing files.** `.gitignore` excludes `lib/`, `media/`, and `logs/`, so none of their
+**Missing files.** `.gitignore` excluded `lib/`, `media/`, and `logs/`, so none of their
 contents survived:
 
 - `adu.dll`, `pci-ac5.dll`, and the JNI C source
@@ -345,12 +347,20 @@ contents survived:
   Only the build command line remains. Loading either controller class will fail without them.
 - The `media/` directory: `greendino.jpg`, `greenshape.jpg`, `correct.wav`, and
   `incorrect.wav`, the stimuli and feedback sounds `ObjectDiscrimination` needs.
-- `logs/`, which several recorders assume already exists.
+  **Recreated, and not the originals** — see the next entry. `media/` and `logs/` are no
+  longer ignored, so this cannot happen again.
 
-**Absolute paths in config.** `conf/application.properties` and
-`conf/ObjectDiscrimination.properties` point at `~/Projects/lafayette/...`, with
-the Windows equivalents commented out beneath. `conf/MTS.properties` points `imageDirectory`
-at a Photo Booth folder, a stand-in used to test the image cache. All need updating.
+**Recreated media.** The four files under `media/` are stand-ins generated to get
+`ObjectDiscrimination` running; they are *not* the stimuli any published result was
+collected with. `greendino.jpg` is a green dinosaur silhouette and `greenshape.jpg` a green
+triangle, both 200×200 on black to match the composite's black background; `correct.wav` is
+a rising two-tone chime and `incorrect.wav` a low buzz, both 16-bit PCM mono. Anything
+comparing against historical data needs the real stimuli, which are gone.
+
+**Absolute paths in config.** `conf/MTS.properties` still points `imageDirectory` at a Photo
+Booth folder, a stand-in used to test the image cache, and needs updating.
+`conf/application.properties` and `conf/ObjectDiscrimination.properties` used to carry the
+same problem; their paths are now repo-relative.
 
 **Missing properties files.** Only `MTS`, `ObjectDiscrimination`, and `TerminalBaseline`
 have one. `PeckTraining`, `PeckTrainingRed`, `AutoShaping`, `AutoShapingRed`,
@@ -413,20 +423,24 @@ prints nothing and `SocketHandler`'s `getData` would report zeros.
 - `VariableInterval.reset()` calls `rand.nextInt(max - min)`, which throws if
   `interval_min == interval_max`.
 - `CompositeController.run()` is a busy-wait with no sleep, so it pins a core for the
-  duration of a session.
+  duration of a session. The fields it spins on (`isActive`, `isForcedChange`,
+  `isForcedRest`, `compositeDuration`, …) are `volatile` for a reason: without it a modern
+  JIT hoists the reads out of the loop and the controller never observes a response, so
+  every experiment hangs on the start screen. Do not "clean up" those keywords.
 - `AbstractHopper.run()` never exits its loop; the process relies on `System.exit(0)`.
 
 ## Notes for restoring it
 
 A reasonable order of attack:
 
-1. **Get `ObjectDiscrimination` running end to end with `MockHopper`.** It is the most
-   complete experiment and exercises images, audio, per-trial logging, and the criterion
-   logic. It needs: a `logs/` directory, the four `media/` files recreated, and the paths in
-   `conf/ObjectDiscrimination.properties` and `conf/application.properties` pointed
-   somewhere real. Making the paths relative would remove that step permanently.
+1. ~~**Get `ObjectDiscrimination` running end to end with `MockHopper`.**~~ Done. The paths
+   are relative, the media are recreated, `logs/` is tracked, and the composite loop no
+   longer hangs (see the `volatile` note above). A session runs start screen → trials →
+   criterion, and writes all three logs.
 2. **Then `TerminalBaseline`**, which needs no media and exercises the schedule machinery
-   and the composite/element geometry. It was working as of the last commit that touched it.
+   and the composite/element geometry. It was working as of the last commit that touched it,
+   and the `CompositeController` fix removes the hang that would have stopped it on a modern
+   JDK, but it has not been run since.
 3. **Re-register `DataRecorderListener`** in `Application` if the aggregate counts and the
    shutdown summary are wanted, and make `ODRecorder` registration conditional on the
    experiment.

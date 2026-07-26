@@ -20,15 +20,18 @@ import edu.american.weiss.lafayette.experiment.Experiment;
  */
 public class CompositeController implements KeyListener, MouseListener, Runnable {
         
-    protected boolean isActive;
-    protected long compositeDuration;
-    protected long compositeStartTime;
-    protected long responseCount;
-    protected Composite currentComposite;
+    // run() busy-waits on these while the AWT thread and the composite actions
+    // write to them. Without volatile the JIT hoists the reads out of the loop
+    // and the controller never sees a response.
+    protected volatile boolean isActive;
+    protected volatile long compositeDuration;
+    protected volatile long compositeStartTime;
+    protected volatile long responseCount;
+    protected volatile Composite currentComposite;
     protected Experiment exp;
     private Random rand;
-    private boolean isForcedChange = false;
-    private boolean isForcedRest = false;
+    private volatile boolean isForcedChange = false;
+    private volatile boolean isForcedRest = false;
     
     public CompositeController(Experiment exp) {
         this.exp = exp;
