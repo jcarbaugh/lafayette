@@ -12,6 +12,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 //import edu.american.huntsberry.data.TerminalBaseline2Recorder;
 //import edu.american.huntsberry.data.TerminalBaseline3Recorder;
 import edu.american.huntsberry.data.ODRecorder;
+import edu.american.huntsberry.experiment.ObjectDiscrimination;
 import edu.american.weiss.lafayette.chamber.Chamber;
 import edu.american.weiss.lafayette.chamber.Hopper;
 import edu.american.weiss.lafayette.chamber.HopperListener;
@@ -97,9 +98,14 @@ public class Application {
 	    	controller.registerEventListener(new ResponseRecorderListener());
 	    	controller.registerEventListener(new EventRecorderListener());
 	    	
-	    	ODRecorder odRecorder = new ODRecorder();
-	    	controller.registerEventListener(odRecorder);
-	    	new Thread(odRecorder).start();
+	    	// ODRecorder only ever writes rows for ObjectDiscriminationComposites.
+	    	// Registered for any other experiment it still creates an od_<timestamp>.log,
+	    	// with a null ITI in the header and no trials in it.
+	    	if (exp instanceof ObjectDiscrimination) {
+		    	ODRecorder odRecorder = new ODRecorder();
+		    	controller.registerEventListener(odRecorder);
+		    	new Thread(odRecorder).start();
+	    	}
 	    	
 	    	ccThread = new Thread(cc);
 	    	ccThread.start();
