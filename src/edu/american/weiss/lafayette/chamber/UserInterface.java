@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.DisplayMode;
 import java.awt.FlowLayout;
@@ -16,6 +17,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.util.MissingResourceException;
 
@@ -23,6 +26,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import edu.american.weiss.lafayette.event.ChamberEvent;
 import edu.american.weiss.lafayette.event.ReinforcerCompleteEvent;
@@ -74,15 +78,21 @@ public class UserInterface extends JFrame implements ChamberEventListener {
     }
 
     protected void initComponents() {
-        
+
+        // the frame is focusable, but do not ask for focus here: the window is
+        // not on screen yet, so the request would be dropped. claimKeyboardFocus()
+        // asks once init() has put it up.
         this.setFocusable(true);
-        this.requestFocus(true);
-    	
+
     	Container c = getContentPane();
-    	
+
         btnExit = new JButton("Exit");
         btnExit.addActionListener(listener);
-        
+        // keep the debug bar out of the focus cycle. a focusable JButton takes the
+        // initial focus away from the response area, and then consumes the spacebar
+        // as a button activation -- which is Exit, not a reinforcer.
+        btnExit.setFocusable(false);
+
         if (showCursor) {
             cur = Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
         } else {
@@ -96,7 +106,13 @@ public class UserInterface extends JFrame implements ChamberEventListener {
         
         pnlResponseArea = new JPanel();
         pnlResponseArea.setCursor(cur);
-        
+        // the response area is the deliberate focus owner: registerKeyListener()
+        // puts the key listener on it as well as on the frame. a JComponent is
+        // already focusable by default, so this states the requirement rather than
+        // changing it -- what actually points focus here is claimKeyboardFocus().
+        // a focusable JPanel paints no focus ring, so nothing changes on screen.
+        pnlResponseArea.setFocusable(true);
+
         pnlResponseContainer = new JPanel(new BorderLayout());
         pnlResponseContainer.add(pnlResponseArea, BorderLayout.CENTER);
         
@@ -123,6 +139,15 @@ public class UserInterface extends JFrame implements ChamberEventListener {
 
         setContentPane(c);
 
+        // whenever the window becomes the focused window -- at startup, or after
+        // the operator has clicked away and back -- put focus back on the response
+        // area so the keys keep working for the rest of the session.
+        addWindowFocusListener(new WindowAdapter() {
+            public void windowGainedFocus(WindowEvent ev) {
+                pnlResponseArea.requestFocusInWindow();
+            }
+        });
+
     }
     
     public void init() {
@@ -141,13 +166,63 @@ public class UserInterface extends JFrame implements ChamberEventListener {
                 pack();
                 setVisible(true);
             }
+
+            claimKeyboardFocus();
             
             isInitialized = true;
             
         }
             
     }
-    
+
+    /**
+     * Take keyboard focus now that the window is on screen.
+     *
+     * This has to happen after the window is showing: a request made while the
+     * frame is still unrealized is dropped, which is why Esc / Space / Break used
+     * to work only if the window happened to be activated some other way. init()
+     * runs on the main thread rather than the EDT, so the request is queued to run
+     * after the work that put the window up.
+     */
+    private void claimKeyboardFocus() {
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                requestForeground();
+                toFront();
+                requestFocus();
+                pnlResponseArea.requestFocusInWindow();
+            }
+        });
+
+    }
+
+    /**
+     * Bring the whole application to the foreground.
+     *
+     * toFront() and requestFocus() only order and focus windows within an
+     * application that is already frontmost. Launched from a terminal the JVM is
+     * not, and on macOS a full-screen window then comes up showing but inactive:
+     * no focused window, no focus owner, and every key press going to whatever
+     * app the OS still considers frontmost. Best effort, and a no-op wherever the
+     * platform does not implement it.
+     */
+    private void requestForeground() {
+
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop desktop = Desktop.getDesktop();
+                if (desktop.isSupported(Desktop.Action.APP_REQUEST_FOREGROUND)) {
+                    desktop.requestForeground(true);
+                }
+            }
+        } catch (Exception e) {
+            // not available on this platform. the window is still up and usable
+            // with the mouse; the operator can click it to activate it.
+        }
+
+    }
+
     public void registerMouseListener(MouseListener ml) {
         this.addMouseListener(ml);
         pnlResponseArea.addMouseListener(ml);
