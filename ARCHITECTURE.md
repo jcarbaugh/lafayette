@@ -83,15 +83,14 @@ selected at runtime by fully-qualified class name passed as an argument to `Appl
 which then reflectively instantiates the class and loads a matching properties file. No
 framework code needs to know the set of available experiments.
 
-**This direction is violated in three places**, each a point where framework code acquired a
+**This direction is violated in two places**, each a point where framework code acquired a
 dependency on experiment code:
 
 - `weiss.lafayette.composite.TriangleCompositeUtil` imports `huntsberry.composite.GenericComposite`
   and `huntsberry.compositeelement.TriangleCompositeElement`.
-- `weiss.lafayette.data.DataRecorderListener` imports `huntsberry.experiment.Test1` to
-  perform an `instanceof` check that suppresses recording during a warm-up period.
-- `weiss.lafayette.Application` imports and unconditionally registers
-  `huntsberry.data.ODRecorder`, which is specific to one experiment.
+- `weiss.lafayette.Application` imports `huntsberry.data.ODRecorder`, which is specific to
+  one experiment, and `huntsberry.experiment.ObjectDiscrimination` for the `instanceof`
+  check that gates its registration.
 
 These are the places where adding a new experiment may require touching framework code.
 

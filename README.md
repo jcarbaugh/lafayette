@@ -218,7 +218,6 @@ src/
     data/                           Recorders and log writers, incl. MedPC output
     io/jni/                         Native bindings: ADUController, Opto22Controller
     gui/                            "Processing, please wait" shutdown frame
-    server/                         TCP control server (unused, see gaps)
     client/                         Remote monitoring client (stubs, see gaps)
     xml/                            XML experiment loader (commented out, see gaps)
   edu/american/huntsberry/          ── experiment-specific code ──
@@ -382,7 +381,7 @@ session, plus `ODRecorder` for `ObjectDiscrimination` only.
 | `responselog_<start>.log` | `ResponseRecorderListener` | Every response: elapsed ms, (x, y), composite group, element group, plus a line per composite transition |
 | `composite.log` | `EventRecorderListener` | Tab-separated elapsed ms and composite id, one row per transition |
 | `od_<timestamp>.log` | `ODRecorder` | Per-trial `ObjectDiscrimination` results: trial number, `correct` / `incorrect` / `refused`, response time. Ends with a summary block: trial count, refused, correct, incorrect, % correct, mean response time |
-| `run.log` | `run.sh` / `run.bat` | Redirected stdout, including the shutdown summary from `DataRecorder.debug()` |
+| `run.log` | `run.sh` / `run.bat` | Redirected stdout |
 
 Three more recorders exist but are not currently registered:
 
@@ -481,9 +480,6 @@ which counts responses itself. `FixedRatio` and `VariableRatio` are unused.
 
 **Dead and stub code.**
 
-- `ControlServer` / `SocketHandler` implement a small TCP protocol (`getData`,
-  `setVariable`, `getCumulativeRecorder`) for remote monitoring, but nothing ever starts the
-  server.
 - `client/LafayetteClient`, `client/net/ClientSocketProcessor`, and `client/net/SocketManager`
   are empty classes. `client/ui/ClientInterface` is a partial Swing layout with a hardcoded
   `c:\1125788029765.png` in its `main`.
@@ -495,10 +491,6 @@ which counts responses itself. `FixedRatio` and `VariableRatio` are unused.
 - `edu.american.huntsberry.test` holds an older duplicate set of composites. Nothing imports
   from it.
 - `com.carbauja.lafayette.data.DataWriter` is an interface with no implementations.
-
-**Wiring quirks.** `DataRecorderListener` is never registered, which means the static
-`DataRecorder` store is never populated, so the shutdown summary prints nothing and
-`SocketHandler`'s `getData` would report zeros.
 
 **Smaller traps.**
 
@@ -575,14 +567,11 @@ A reasonable order of attack:
    `Desktop.requestForeground` is called and does not override it, and an unmodified build
    behaves the same way, which is what made this look intermittent (it worked in one session
    out of four) rather than broken.
-5. **Re-register `DataRecorderListener`** in `Application` if the aggregate counts and the
-   shutdown summary are wanted. `ODRecorder` registration is now conditional on the
-   experiment.
-6. **Write the missing properties files** for the experiments that lack one. The required
+5. **Write the missing properties files** for the experiments that lack one. The required
    keys are listed above and each experiment's constructor makes them explicit.
-7. **Fix the Ant build** by dropping the `<javah>` step from the `compile` target; it is
+6. **Fix the Ant build** by dropping the `<javah>` step from the `compile` target; it is
    only needed when rebuilding the native ADU bindings, which can't be rebuilt anyway
    without the missing C source.
-8. **`MTS` needs designing, not just fixing.** The sample/match alternation was never
+7. **`MTS` needs designing, not just fixing.** The sample/match alternation was never
    written, so finishing it means deciding what the task should do rather than recovering
    what it did.
