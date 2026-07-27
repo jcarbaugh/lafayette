@@ -59,7 +59,15 @@ javac -d build $(find src -name '*.java')
 # run an experiment (fully-qualified experiment class as the only argument)
 java -cp conf:build edu.american.weiss.lafayette.Application \
     edu.american.huntsberry.experiment.ObjectDiscrimination
+
+# or the red/blue triangle task
+java -cp conf:build edu.american.weiss.lafayette.Application \
+    edu.american.huntsberry.experiment.TerminalBaseline
 ```
+
+`ObjectDiscrimination` ends on its own, once the accuracy criterion is met or the trial
+count runs out. `TerminalBaseline` does not: it has no trial cap and no criterion, so it
+runs until the operator ends the session (see [Runtime controls](#runtime-controls)).
 
 `conf/` must be on the classpath, since properties are loaded as classpath resources, not
 as files. `logs/` must exist; nothing creates it, so an empty one is tracked in the repo.
@@ -87,6 +95,14 @@ Three keys are handled while an experiment is running:
 
 With `show_debugbar=true` there is also an on-screen **Exit** button, a status line, and a
 hopper indicator that turns green while the hopper is open.
+
+**The keys only work when the window holds keyboard focus, which is not guaranteed.** In
+full-screen exclusive mode the frame can end up with no focus owner at all, in which case
+`Esc`, `Space` and `Break` silently do nothing while mouse responses keep registering
+normally. `UserInterface.initComponents()` does call `requestFocus`, but before the frame
+is realized, so it has no effect. Click the window to activate it, or use the debug bar's
+**Exit** button, which goes through Swing and is unaffected. See
+[Known gaps](#known-gaps).
 
 ## How it works
 
@@ -219,7 +235,7 @@ supplies the initial, next, rest, and final composites. `Application` loads
 | `Shaping` | Full-screen grey; any response opens the hopper | Complete |
 | `PeckTraining` / `PeckTrainingRed` | Blue bottom-left / red top-right triangle keys on an FR schedule via `HopperRatioAction` | Complete; no properties file |
 | `AutoShaping` / `AutoShapingRed` | Autoshaping with blue/red keys; reinforcer delivered if the key is *not* touched | Incomplete; see gaps |
-| `TerminalBaseline` | The core stimulus-control task: one of eight red/blue triangles (4 orientations × 2 colours) inside a white frame, each colour on its own VI schedule | Working; last fixed Dec 2010 |
+| `TerminalBaseline` | The core stimulus-control task: one of eight red/blue triangles (4 orientations × 2 colours) inside a white frame, each colour on its own VI schedule | Working; verified end to end July 2026 |
 | `Test1` | Warm-up block of random single-colour composites, then shuffled blocks of blue / red / compound (red+blue) composites, no reinforcement | Complete; no properties file |
 | `ObjectDiscrimination` | Two images side by side, positions randomised. Touching the correct one plays a WAV and opens the hopper; the incorrect one plays a different WAV. Ends early once a sliding-window accuracy criterion is met | Working; the most finished experiment |
 | `MTS` | Matching-to-sample | **Unfinished**; see gaps |
@@ -241,6 +257,42 @@ The most complete task, and the one the later work was built around:
 6. A sliding window of the last `criteria_trials` outcomes is kept. Once
    `criteria_threshold` of them are correct, the session ends early on an orange
    "CRITERIA MET" screen; otherwise it ends on a red screen after `trials` trials.
+
+### TerminalBaseline in detail
+
+One of the original April 2010 tasks, and the one that exercises the most of the framework:
+the schedule repository, global composite actions, and the element geometry and z-ordering.
+
+1. The session opens on a black frame for 5 s, then alternates active and rest composites
+   until the operator ends it.
+2. Each active composite is a `GenericComposite` holding two elements: a white
+   `BlackFrameElement` (a 110 × 110 box at z-index 0) and, on top of it at z-index 1, one
+   of eight right triangles — four orientations × red/blue — filling half of the inner
+   100 × 100 box. Both are centred on the response panel. Everything is computed from
+   `ui.getResponseSize()` in the experiment's *constructor*, so the response panel must
+   already have been laid out; `Application` does call `ui.init()` first.
+3. Every composite carries a `HopperAction` as its global action, gated by the VI schedule
+   registered for its colour. A touch anywhere fires the hopper only once the interval has
+   lapsed, after which the schedule resets — so reinforcement is intermittent, and the two
+   colours run independent schedules that persist across composites.
+4. `rest_probability` is 100, so every active composite is followed by a rest. Because
+   `isCorrecting()` is true, responding during a rest extends it by
+   `response_correction_duration` — the standard correction procedure.
+5. `getNextComposite()` never returns `null`, so nothing ends the session from the inside.
+   `Esc` stops the loop and shows the final black frame.
+
+A scripted session in July 2026 confirmed the whole path on JDK 26 with `MockHopper`: all
+eight triangles appeared; touches inside a triangle resolved to it and touches on the
+surrounding frame resolved to the white element beneath, so the z-index ordering works both
+ways; 76 touches on active composites produced 15 reinforcers rather than 76; rests that
+were responded to came out exactly `response_correction_duration` longer than rests that
+were not; and the session ended on the final composite with both recorders flushed.
+
+Note that reinforcers came far further apart than the 2–5 s the VI is configured for — no
+gap under 6 s. That is the schedule working as designed rather than a fault: a schedule
+only advances while a composite of its colour is on screen (`start()` on display,
+`pause()` on destroy), and once the interval has lapsed the reinforcer still waits for the
+next response.
 
 ## Configuration
 
@@ -313,8 +365,8 @@ on macOS against `MockHopper`.
 ## Data output
 
 Everything lands in `log_path`. Which files appear depends on which recorders
-`Application` registers, currently `ResponseRecorderListener`, `EventRecorderListener`,
-and `ODRecorder`.
+`Application` registers: `ResponseRecorderListener` and `EventRecorderListener` for every
+session, plus `ODRecorder` for `ObjectDiscrimination` only.
 
 | File | Written by | Contents |
 | --- | --- | --- |
@@ -408,10 +460,19 @@ which counts responses itself. `FixedRatio` and `VariableRatio` are unused.
   from it.
 - `com.carbauja.lafayette.data.DataWriter` is an interface with no implementations.
 
-**Wiring quirks.** `Application` registers `ODRecorder` unconditionally, for every
-experiment, not just `ObjectDiscrimination`. `DataRecorderListener` is never registered,
-which means the static `DataRecorder` store is never populated, so the shutdown summary
-prints nothing and `SocketHandler`'s `getData` would report zeros.
+**`QueuedRecorder` cannot keep up with a session.** Its `run()` loop removes a *single*
+event from the queue and then sleeps a full second, so it drains at one event per second
+while a live session generates far more than that. Nothing calls its `destroy()` either, so
+`isRunning` never goes false and the drain-the-rest loop after the `while` is dead code —
+`Application.shutdown()`'s `System.exit(0)` throws away whatever is still queued. A
+143-second session produced 157 events, and the `ODRecorder` never got as far as the
+final-composite transition, which is why the log it wrote has no summary block. Only
+`ODRecorder` extends `QueuedRecorder`, so this is an `ObjectDiscrimination` data-loss
+risk: short sessions drain in time, long ones silently lose their tail.
+
+**Wiring quirks.** `DataRecorderListener` is never registered, which means the static
+`DataRecorder` store is never populated, so the shutdown summary prints nothing and
+`SocketHandler`'s `getData` would report zeros.
 
 **Smaller traps.**
 
@@ -420,6 +481,18 @@ prints nothing and `SocketHandler`'s `getData` would report zeros.
   falls back to the bare `hopper_class` key; if that key were absent it would return null.
 - `HopperListener` opens the hopper for `reinforcement_duration` from the properties file,
   ignoring the duration carried on the `ReinforcerEvent` it received.
+- Keyboard focus is not guaranteed in full-screen mode, so `Esc` / `Space` / `Break` can
+  silently do nothing. See [Runtime controls](#runtime-controls).
+- `ReinforcerEvent`s raised by `HopperAction` carry a null composite.
+  `BaseExperimentImpl` does call `Reinforcer.setComposite(comp)`, but `HopperAction`
+  stores it in a private field of its own instead of the inherited
+  `BaseCompositeAction.composite`, which is what its `run()` puts on the event. Nothing
+  reads a composite off a reinforcer event today, so it is latent.
+- `MockHopper` fires `ReinforcerCompleteEvent` twice per reinforcer: once from
+  `deactivateHopper()` and once from `AbstractHopper.run()`, which notifies again right
+  after calling it.
+- `CompositeController.destroy()` guards a transition event with `if (isActive)`
+  immediately after `setActive(false)`, so that event is never sent.
 - `VariableInterval.reset()` calls `rand.nextInt(max - min)`, which throws if
   `interval_min == interval_max`.
 - `CompositeController.run()` is a busy-wait with no sleep, so it pins a core for the
@@ -437,18 +510,27 @@ A reasonable order of attack:
    are relative, the media are recreated, `logs/` is tracked, and the composite loop no
    longer hangs (see the `volatile` note above). A session runs start screen → trials →
    criterion, and writes all three logs.
-2. **Then `TerminalBaseline`**, which needs no media and exercises the schedule machinery
-   and the composite/element geometry. It was working as of the last commit that touched it,
-   and the `CompositeController` fix removes the hang that would have stopped it on a modern
-   JDK, but it has not been run since.
-3. **Re-register `DataRecorderListener`** in `Application` if the aggregate counts and the
-   shutdown summary are wanted, and make `ODRecorder` registration conditional on the
+2. ~~**Then `TerminalBaseline`**, which needs no media and exercises the schedule machinery
+   and the composite/element geometry.~~ Done. It needed no changes: the schedules, the
+   correction procedure, and the element geometry all still work as written. What the run
+   turned up was in the framework around it — `ODRecorder` writing a junk log for every
+   experiment (fixed), and the `QueuedRecorder` and keyboard-focus problems above
+   (documented, not fixed).
+3. **Make `QueuedRecorder` drain properly**, since as it stands a long
+   `ObjectDiscrimination` session loses the tail of its own data: drain the whole queue
+   each pass rather than one event, sleep far less than a second, and call `destroy()` from
+   `Application.shutdown()` so the final flush actually runs before `System.exit(0)`.
+4. **Give the chamber window keyboard focus** once it is on screen, so the documented
+   `Esc` / `Space` / `Break` controls work reliably rather than depending on how the window
+   happened to be activated.
+5. **Re-register `DataRecorderListener`** in `Application` if the aggregate counts and the
+   shutdown summary are wanted. `ODRecorder` registration is now conditional on the
    experiment.
-4. **Write the missing properties files** for the experiments that lack one. The required
+6. **Write the missing properties files** for the experiments that lack one. The required
    keys are listed above and each experiment's constructor makes them explicit.
-5. **Fix the Ant build** by dropping the `<javah>` step from the `compile` target; it is
+7. **Fix the Ant build** by dropping the `<javah>` step from the `compile` target; it is
    only needed when rebuilding the native ADU bindings, which can't be rebuilt anyway
    without the missing C source.
-6. **`MTS` needs designing, not just fixing.** The sample/match alternation was never
+8. **`MTS` needs designing, not just fixing.** The sample/match alternation was never
    written, so finishing it means deciding what the task should do rather than recovering
    what it did.
