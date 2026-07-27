@@ -96,12 +96,21 @@ Three keys are handled while an experiment is running:
 With `show_debugbar=true` there is also an on-screen **Exit** button, a status line, and a
 hopper indicator that turns green while the hopper is open.
 
-**The keys only work when the window holds keyboard focus, which is not guaranteed.** In
-full-screen exclusive mode the frame can end up with no focus owner at all, in which case
-`Esc`, `Space` and `Break` silently do nothing while mouse responses keep registering
-normally. `UserInterface.initComponents()` does call `requestFocus`, but before the frame
-is realized, so it has no effect. Click the window to activate it, or use the debug bar's
-**Exit** button, which goes through Swing and is unaffected. See
+The keys need the window to hold keyboard focus, and the window now claims it. `init()`
+calls `claimKeyboardFocus()` once the window is actually on screen, which asks the OS to
+bring the application forward and then puts focus on the response panel; a
+`WindowFocusListener` puts it back there every time the window is activated again, so
+clicking away and back does not leave the keys dead. The response panel is the deliberate
+focus owner, and the debug bar's **Exit** button is no longer focusable, so it can neither
+take the initial focus nor swallow `Space` as a button press.
+
+**On macOS the application still cannot bring itself forward.** Launched from a terminal on
+macOS 26 the window comes up showing but inactive — no active window, no focus owner —
+because the OS does not let a background process steal focus, and `Desktop.requestForeground`
+does not override that. This is a platform restriction rather than an application bug: an
+unmodified build behaves identically. Click the window once (or use the debug bar's **Exit**
+button, which goes through Swing and needs no focus); after that first activation focus
+lands on the response panel and stays there for the rest of the session. See
 [Known gaps](#known-gaps).
 
 ## How it works
@@ -498,8 +507,10 @@ which counts responses itself. `FixedRatio` and `VariableRatio` are unused.
   falls back to the bare `hopper_class` key; if that key were absent it would return null.
 - `HopperListener` opens the hopper for `reinforcement_duration` from the properties file,
   ignoring the duration carried on the `ReinforcerEvent` it received.
-- Keyboard focus is not guaranteed in full-screen mode, so `Esc` / `Space` / `Break` can
-  silently do nothing. See [Runtime controls](#runtime-controls).
+- The window claims keyboard focus once it is on screen, but on macOS the OS will not let a
+  terminal-launched process bring itself forward, so the window still has to be activated
+  once by hand before `Esc` / `Space` / `Break` do anything. See
+  [Runtime controls](#runtime-controls).
 - `ReinforcerEvent`s raised by `HopperAction` carry a null composite.
   `BaseExperimentImpl` does call `Reinforcer.setComposite(comp)`, but `HopperAction`
   stores it in a private field of its own instead of the inherited
@@ -532,7 +543,7 @@ A reasonable order of attack:
    correction procedure, and the element geometry all still work as written. What the run
    turned up was in the framework around it — `ODRecorder` writing a junk log for every
    experiment (fixed), the `QueuedRecorder` drain problem (fixed in step 3 below), and the
-   keyboard-focus problem above (documented, not fixed).
+   keyboard-focus problem (fixed in step 4 below, apart from a macOS platform restriction).
 3. ~~**Make `QueuedRecorder` drain properly**, since as it stands a long
    `ObjectDiscrimination` session loses the tail of its own data: drain the whole queue
    each pass rather than one event, sleep far less than a second, and call `destroy()` from
@@ -544,9 +555,26 @@ A reasonable order of attack:
    [How recorders are flushed](#how-recorders-are-flushed). Measured on a 25-trial session
    at ~2.6 transitions/second: before, the log had 7 trials and no summary block; after, all
    25 and the summary.
-4. **Give the chamber window keyboard focus** once it is on screen, so the documented
+4. ~~**Give the chamber window keyboard focus** once it is on screen, so the documented
    `Esc` / `Space` / `Break` controls work reliably rather than depending on how the window
-   happened to be activated.
+   happened to be activated.~~ Done on the application's side, with one platform caveat that
+   is not the application's to fix. `init()` now calls `claimKeyboardFocus()` *after* the
+   window is up — the old `requestFocus` ran in `initComponents()`, before the frame was
+   realized, so it never did anything — and that asks the OS to bring the app forward, then
+   focuses the response panel. A `WindowFocusListener` re-focuses the panel on every
+   activation. The **Exit** button is no longer focusable, which matters more than it looks:
+   with `show_debugbar=true` it was the natural initial focus owner and it consumed `Space`
+   as a button press, so the documented "fire a reinforcer" key was **shutting the session
+   down** instead. Measured on JDK 26 with `MockHopper`: the designated focus owner moved
+   from the frame to the response panel, and with the window activated, real synthesized
+   `Space` fired a reinforcer, `Esc` ended the session, and key code 3 ran the full shutdown
+   with the recorders flushed. `Space` delivered to the **Exit** button exits the JVM on an
+   unmodified build and is ignored after the change. Verified with the debug bar both on and
+   off. The caveat: on macOS 26 a terminal-launched JVM cannot bring itself to the front, so
+   the window still comes up inactive and needs one click before the keys do anything —
+   `Desktop.requestForeground` is called and does not override it, and an unmodified build
+   behaves the same way, which is what made this look intermittent (it worked in one session
+   out of four) rather than broken.
 5. **Re-register `DataRecorderListener`** in `Application` if the aggregate counts and the
    shutdown summary are wanted. `ODRecorder` registration is now conditional on the
    experiment.
