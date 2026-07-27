@@ -1,6 +1,5 @@
 bin/
-build/
-dist/
+target/
 lib/
 logs/*
 !logs/.gitkeep
