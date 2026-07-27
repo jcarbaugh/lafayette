@@ -19,7 +19,6 @@ import edu.american.weiss.lafayette.chamber.HopperListener;
 import edu.american.weiss.lafayette.chamber.UserInterface;
 import edu.american.weiss.lafayette.chamber.UserInterfaceFactory;
 import edu.american.weiss.lafayette.composite.CompositeController;
-import edu.american.weiss.lafayette.data.DataRecorder;
 import edu.american.weiss.lafayette.data.EventRecorderListener;
 import edu.american.weiss.lafayette.data.ResponseRecorderListener;
 //import edu.american.weiss.lafayette.data.ResponseSummaryListener;
@@ -158,8 +157,6 @@ public class Application {
 				hopper.destroy();
 			}
 		} catch (Exception e) { }
-		
-		DataRecorder.debug();
 
 		pf.setVisible(false);
 		
