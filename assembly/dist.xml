@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Reproduces the layout the Ant `dist` target built: conf/, lib/, logs/, and the two
+	launcher scripts, zipped with no wrapping top-level directory so the zip unpacks
+	straight into a run directory.
+-->
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.2.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.2.0 http://maven.apache.org/xsd/assembly-2.2.0.xsd">
+
+	<id>dist</id>
+
+	<formats>
+		<format>zip</format>
+	</formats>
+
+	<!-- Ant zipped the contents of dist/, not dist/ itself. -->
+	<includeBaseDirectory>false</includeBaseDirectory>
+
+	<fileSets>
+
+		<fileSet>
+			<directory>conf</directory>
+			<outputDirectory>conf</outputDirectory>
+		</fileSet>
+
+		<!--
+			Matches the Ant copy's include list. It contributes nothing today: adu.dll and
+			pci-ac5.dll were lost in the crash and only jni.bat remains. It is here so a
+			recovered dll lands in the distribution without anyone having to remember this
+			file exists.
+		-->
+		<fileSet>
+			<directory>lib</directory>
+			<outputDirectory>lib</outputDirectory>
+			<includes>
+				<include>*.dll</include>
+				<include>*.jar</include>
+				<include>*.lib</include>
+			</includes>
+		</fileSet>
+
+		<!--
+			log_path is relative to the working directory and nothing creates it, so the
+			distribution has to ship the empty directory. .gitkeep is what keeps it in git.
+		-->
+		<fileSet>
+			<directory>logs</directory>
+			<outputDirectory>logs</outputDirectory>
+			<includes>
+				<include>.gitkeep</include>
+			</includes>
+		</fileSet>
+
+	</fileSets>
+
+	<files>
+
+		<file>
+			<source>${project.build.directory}/${project.build.finalName}.jar</source>
+			<outputDirectory>lib</outputDirectory>
+		</file>
+
+		<!-- 0755 replaces the Ant <chmod> step. -->
+		<file>
+			<source>run.sh</source>
+			<outputDirectory />
+			<fileMode>0755</fileMode>
+		</file>
+
+		<file>
+			<source>run.bat</source>
+			<outputDirectory />
+		</file>
+
+	</files>
+
+</assembly>

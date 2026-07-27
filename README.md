@@ -53,15 +53,14 @@ present the app falls back to `MockHopper`, so it runs on a normal desktop for d
 
 ```sh
 # compile
-mkdir -p build logs
-javac -d build $(find src -name '*.java')
+./mvnw compile
 
 # run an experiment (fully-qualified experiment class as the only argument)
-java -cp conf:build edu.american.weiss.lafayette.Application \
+java -cp conf:target/classes edu.american.weiss.lafayette.Application \
     edu.american.huntsberry.experiment.ObjectDiscrimination
 
 # or the red/blue triangle task
-java -cp conf:build edu.american.weiss.lafayette.Application \
+java -cp conf:target/classes edu.american.weiss.lafayette.Application \
     edu.american.huntsberry.experiment.TerminalBaseline
 ```
 
@@ -76,11 +75,36 @@ directory, so run from the repository root.
 
 With no argument, `Application` runs the built-in `TestExperimentImpl` demo.
 
-**Ant.** `build.xml` has `compile`, `dist`, `run`, `run-od`, `run-tb`, `run-mts`, and
-`run-jar` targets, and `dist` produces a zip with `run.sh` / `run.bat` wrappers. The
-`compile` target also calls `<javah>`, which depends on the `javah` tool removed in JDK 10,
-so the Ant build will not work on a modern JDK without dropping that step. Plain `javac`
-over `src/` compiles cleanly.
+**Maven.** The build is `pom.xml`, driven through the checked-in wrapper, so a JDK is the
+only prerequisite — `./mvnw` downloads Maven itself on first use and needs network access
+to do it.
+
+| Command | Result |
+| --- | --- |
+| `./mvnw compile` | classes in `target/classes` |
+| `./mvnw package` | `target/lafayette.jar` (executable manifest) and `target/lafayette-dist.zip` |
+| `./mvnw clean` | removes `target/` |
+| `./mvnw compile exec:exec` | runs the built-in demo |
+| `./mvnw compile exec:exec -Pod` \| `-Ptb` \| `-Pmts` | runs `ObjectDiscrimination`, `TerminalBaseline`, or `MTS` |
+| `./mvnw compile exec:exec -Dexperiment=<class>` | runs any other experiment |
+
+`exec:exec` does not compile on its own, hence the explicit `compile` — the Ant run targets
+got that from a `depends`. It forks a JVM rather than running in Maven's, so the
+application's `System.exit(0)` shutdown path ends the app and not the build.
+
+The dist zip unpacks into a ready run directory: `conf/`, `lib/lafayette.jar`, an empty
+`logs/`, and the two launcher scripts, with `run.sh` already executable. Two differences
+from the Ant zip it replaces: it lands in `target/` rather than the repository root, and it
+is named for the project version instead of carrying a date stamp, which is what Maven's
+version field is for.
+
+The source tree stays where it is rather than moving to `src/main/java`; `pom.xml` points
+`sourceDirectory` at `src`. `conf/` is deliberately **not** a resource directory, so the
+properties files stay editable beside the jar instead of being sealed inside it.
+
+The `<javah>` step that made the old Ant build fail on JDK 10 and later is gone with the
+build file that contained it. Nothing in the project needs it: it generated headers for the
+native ADU bindings, whose C source did not survive (see [Known gaps](#known-gaps)).
 
 ### Runtime controls
 
@@ -199,7 +223,9 @@ its duration has elapsed.
 ## Repository layout
 
 ```
-build.xml                       Ant build (compile / dist / run targets)
+pom.xml                         Maven build (compile / package / exec profiles)
+mvnw, mvnw.cmd, .mvn/           Maven wrapper; no Maven install needed
+assembly/dist.xml               Layout of the distribution zip
 run.sh, run.bat                 Launcher wrappers used by the dist zip
 conf/                           Properties files (loaded from the classpath)
 lib/jni.bat                     MSVC command line that builds adu.dll
@@ -434,6 +460,9 @@ contents survived:
 - `adu.dll`, `pci-ac5.dll`, and the JNI C source
   (`edu_american_weiss_lafayette_io_jni_ADUController.c`) referenced by `lib/jni.bat`.
   Only the build command line remains. Loading either controller class will fail without them.
+  If the C source ever turns up, note that the `javah` its header generation depended on was
+  removed in JDK 10; `javac -h <dir>` does that job now. `lib/` is also *still* ignored, so a
+  recovered dll has to be force-added or it will be lost the same way twice.
 - The `media/` directory: `greendino.jpg`, `greenshape.jpg`, `correct.wav`, and
   `incorrect.wav`, the stimuli and feedback sounds `ObjectDiscrimination` needs.
   **Recreated, and not the originals** — see the next entry. `media/` and `logs/` are no
@@ -597,9 +626,32 @@ A reasonable order of attack:
    themselves are invented rather than recovered — see
    [Known gaps](#known-gaps). This does not make `AutoShaping` work: it no longer crashes, but
    its composites still draw nothing.
-6. **Fix the Ant build** by dropping the `<javah>` step from the `compile` target; it is
+6. ~~**Fix the Ant build** by dropping the `<javah>` step from the `compile` target; it is
    only needed when rebuilding the native ADU bindings, which can't be rebuilt anyway
-   without the missing C source.
+   without the missing C source.~~ Done, but by **replacing Ant with Maven** rather than
+   patching it — repairing a build tool the Java ecosystem has moved off was worth less than
+   putting the project on a current one, and deleting `build.xml` retires the `<javah>`
+   problem outright. `pom.xml` keeps the flat `src/` tree via `sourceDirectory` instead of
+   moving 117 files, and pointedly does not make `conf/` a resource directory: the properties
+   have to stay editable beside the jar, not sealed into it. A script-only Maven wrapper is
+   checked in, so the build needs a JDK and nothing else — no committed binary. `assembly/dist.xml`
+   reproduces the old dist layout. Two behaviors that looked like details and were not:
+   `Application` branches on `args.length`, not on the argument's *content*, so an unset
+   experiment placeholder passed as an empty string took the wrong branch and failed with
+   `Unable to locate class:` — the run profiles therefore *append* an argument rather than
+   substituting into one, which is what keeps the no-argument demo working. And `verbose:jni`,
+   which the Ant `run-od` / `run-tb` / `run-mts` targets all passed, is dead: nothing in `src/`
+   or `conf/` reads it and `main` only ever looks at `args[0]`, so it was not carried over.
+   Verified on JDK 26 with `MockHopper`: `./mvnw clean package` builds **123 classes**, exactly
+   what the old `javac` over `src/` produced, with `Main-Class` set and no `conf/` leakage into
+   the jar. All four run paths start a session and write logs — bare demo, `-Pod` (which also
+   emits `od_<timestamp>.log`, confirming the experiment registers as a listener), `-Ptb`, and
+   `-Dexperiment=…Habituation` (whose response log shows `HabituationComposite`). The dist zip
+   was unpacked to a clean directory and launched through `run.sh`, which arrives at mode 0755
+   and logged `TerminalBaseline` moving from `initial` to `red_bottom_right` at 5010 ms.
+   One cosmetic wart: `mvnw` prints `Unable to locate a Java Runtime` on macOS when the JDK is
+   not registered with `/usr/libexec/java_home`, then falls back to `PATH` and works. Setting
+   `JAVA_HOME` silences it.
 7. **`MTS` needs designing, not just fixing.** The sample/match alternation was never
    written, so finishing it means deciding what the task should do rather than recovering
    what it did.

@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>edu.american.weiss</groupId>
+	<artifactId>lafayette</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>Lafayette</name>
+	<description>
+		Operant-conditioning experiment platform for Lafayette Instrument chamber hardware.
+	</description>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<!--
+			11 is the hard floor: UserInterface.requestForeground() uses
+			Desktop.Action.APP_REQUEST_FOREGROUND, which is Java 9+. 17 keeps the jar
+			runnable on any lab machine with a current LTS.
+		-->
+		<maven.compiler.release>17</maven.compiler.release>
+
+		<class.main>edu.american.weiss.lafayette.Application</class.main>
+	</properties>
+
+	<build>
+		<!--
+			The source tree predates the Maven convention and is left where it is, so this
+			points at it rather than moving 117 files. conf/ is deliberately NOT a resource
+			directory: the properties files ship beside the jar so an operator can edit them
+			between sessions, and Application loads them off the classpath as a directory.
+		-->
+		<sourceDirectory>src</sourceDirectory>
+
+		<!-- run.sh and run.bat both launch lib/lafayette.jar, so the name is load-bearing. -->
+		<finalName>lafayette</finalName>
+
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.15.0</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.5.1</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>${class.main}</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.8.0</version>
+				<configuration>
+					<descriptors>
+						<descriptor>assembly/dist.xml</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>dist</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!--
+				Replaces the Ant run / run-od / run-tb / run-mts targets. exec:exec forks a
+				real JVM the way Ant's fork="true" did, so the application's System.exit(0)
+				shutdown path ends the app rather than the build. Run it as
+				`mvn compile exec:exec`, since exec:exec does not compile on its own.
+			-->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.6.3</version>
+				<configuration>
+					<!-- The JDK running Maven, not whatever `java` resolves to on PATH. -->
+					<executable>${java.home}/bin/java</executable>
+					<!--
+						No experiment argument here on purpose. Application branches on
+						args.length, not on the argument's content: given an argument it
+						registers the experiment as an event listener, given none it builds the
+						demo without registering it. An empty ${experiment} placeholder would
+						still be passed as an empty argument and take the wrong branch, so the
+						profiles below append a real argument instead of substituting into one.
+					-->
+					<arguments>
+						<argument>-Xmx512m</argument>
+						<argument>-classpath</argument>
+						<argument>${project.basedir}/conf${path.separator}${project.build.outputDirectory}</argument>
+						<argument>${class.main}</argument>
+					</arguments>
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+
+	<!--
+		Each profile appends one argument to the exec command line above. Appending rather
+		than substituting is what lets the no-profile case pass no argument at all and get
+		the built-in demo, the way Ant's bare `run` target did.
+	-->
+	<profiles>
+
+		<!-- Shorthand for the three experiments Ant had targets for. -->
+		<profile>
+			<id>od</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<configuration>
+							<arguments combine.children="append">
+								<argument>edu.american.huntsberry.experiment.ObjectDiscrimination</argument>
+							</arguments>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>tb</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<configuration>
+							<arguments combine.children="append">
+								<argument>edu.american.huntsberry.experiment.TerminalBaseline</argument>
+							</arguments>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>mts</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<configuration>
+							<arguments combine.children="append">
+								<argument>edu.american.huntsberry.experiment.MTS</argument>
+							</arguments>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<!--
+			Any of the other eleven experiments, which Ant never had targets for:
+			`mvn compile exec:exec -Dexperiment=<class>`. Activates on the property being
+			set at all, so it cannot fire with an empty value.
+		-->
+		<profile>
+			<id>experiment</id>
+			<activation>
+				<property>
+					<name>experiment</name>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<configuration>
+							<arguments combine.children="append">
+								<argument>${experiment}</argument>
+							</arguments>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+	</profiles>
+
+</project>
