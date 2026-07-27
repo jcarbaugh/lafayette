@@ -387,6 +387,33 @@ Three more recorders exist but are not currently registered:
 
 Both sets are commented out of `Application`'s imports and wiring (see below).
 
+### How recorders are flushed
+
+`ODRecorder` is the only `QueuedRecorder`: it does not write on the thread that raises an
+event, it queues the event and writes from its own thread. That makes shutdown ordering
+load-bearing, because the file is only complete once the queue is empty.
+
+Each pass of `QueuedRecorder.run()` drains the queue to empty, then sleeps 25 ms, so the
+recorder keeps up with a session instead of falling behind it. `Application.shutdown()`
+raises the `DestroyEvent`, tears down the event controller so nothing further can be
+queued, and only then calls `QueuedRecorder.destroy()`, which clears the run flag and
+**blocks** until the recorder has made a final drain pass and run `destroyChild()`. The
+join is capped at five seconds so a wedged `processChamberEvent` cannot hang shutdown
+behind the `ProcessingFrame`. Only after that does `System.exit(0)` run.
+
+The order matters in both directions: the `DestroyEvent` is what makes `ODRecorder` close
+its `FileOutputStream`, so it has to be queued *before* the stop signal, and the drain has
+to finish *before* the exit. This is what puts the summary block in `od_<timestamp>.log`.
+A recorder added later gets the same treatment for free by extending `QueuedRecorder`, but
+it does need wiring into `shutdown()` alongside `odRecorder`.
+
+Because the queue is written by whichever thread raised the event and drained by the
+recorder thread, `eventQueue` is a `ConcurrentLinkedQueue` and `isRunning` is `volatile`.
+Do not "simplify" either back: without the `volatile` the recorder thread can hoist the
+flag read out of its loop, never see the stop signal, and turn shutdown into a five-second
+hang. `isRunning` is set true in the constructor rather than at the top of `run()`, so a
+`destroy()` arriving before the thread is scheduled cannot be undone by the thread starting.
+
 ## Known gaps
 
 What the crash and the passage of time cost, roughly in order of how much it matters:
@@ -460,16 +487,6 @@ which counts responses itself. `FixedRatio` and `VariableRatio` are unused.
   from it.
 - `com.carbauja.lafayette.data.DataWriter` is an interface with no implementations.
 
-**`QueuedRecorder` cannot keep up with a session.** Its `run()` loop removes a *single*
-event from the queue and then sleeps a full second, so it drains at one event per second
-while a live session generates far more than that. Nothing calls its `destroy()` either, so
-`isRunning` never goes false and the drain-the-rest loop after the `while` is dead code —
-`Application.shutdown()`'s `System.exit(0)` throws away whatever is still queued. A
-143-second session produced 157 events, and the `ODRecorder` never got as far as the
-final-composite transition, which is why the log it wrote has no summary block. Only
-`ODRecorder` extends `QueuedRecorder`, so this is an `ObjectDiscrimination` data-loss
-risk: short sessions drain in time, long ones silently lose their tail.
-
 **Wiring quirks.** `DataRecorderListener` is never registered, which means the static
 `DataRecorder` store is never populated, so the shutdown summary prints nothing and
 `SocketHandler`'s `getData` would report zeros.
@@ -514,12 +531,19 @@ A reasonable order of attack:
    and the composite/element geometry.~~ Done. It needed no changes: the schedules, the
    correction procedure, and the element geometry all still work as written. What the run
    turned up was in the framework around it — `ODRecorder` writing a junk log for every
-   experiment (fixed), and the `QueuedRecorder` and keyboard-focus problems above
-   (documented, not fixed).
-3. **Make `QueuedRecorder` drain properly**, since as it stands a long
+   experiment (fixed), the `QueuedRecorder` drain problem (fixed in step 3 below), and the
+   keyboard-focus problem above (documented, not fixed).
+3. ~~**Make `QueuedRecorder` drain properly**, since as it stands a long
    `ObjectDiscrimination` session loses the tail of its own data: drain the whole queue
    each pass rather than one event, sleep far less than a second, and call `destroy()` from
-   `Application.shutdown()` so the final flush actually runs before `System.exit(0)`.
+   `Application.shutdown()` so the final flush actually runs before `System.exit(0)`.~~
+   Done, and it needed a fourth change: `destroy()` now blocks until the recorder has
+   drained, since signalling it without waiting still let `System.exit(0)` win the race.
+   It also had to go from `protected` to `public` to be reachable from `Application`, and
+   the queue and run flag had to be made thread-safe first — see
+   [How recorders are flushed](#how-recorders-are-flushed). Measured on a 25-trial session
+   at ~2.6 transitions/second: before, the log had 7 trials and no summary block; after, all
+   25 and the summary.
 4. **Give the chamber window keyboard focus** once it is on screen, so the documented
    `Esc` / `Space` / `Break` controls work reliably rather than depending on how the window
    happened to be activated.

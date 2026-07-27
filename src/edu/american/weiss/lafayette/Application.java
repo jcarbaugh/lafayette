@@ -41,6 +41,7 @@ public class Application {
 	private static UserInterface ui;
 	private static EventController controller;
 	private static Experiment exp;
+	private static ODRecorder odRecorder;
 	
 	private static Properties props;
 		
@@ -102,7 +103,7 @@ public class Application {
 	    	// Registered for any other experiment it still creates an od_<timestamp>.log,
 	    	// with a null ITI in the header and no trials in it.
 	    	if (exp instanceof ObjectDiscrimination) {
-		    	ODRecorder odRecorder = new ODRecorder();
+		    	odRecorder = new ODRecorder();
 		    	controller.registerEventListener(odRecorder);
 		    	new Thread(odRecorder).start();
 	    	}
@@ -143,7 +144,14 @@ public class Application {
 		
 		controller.notifyListeners(new DestroyEvent());
 		controller.destroy();
-		
+
+		// after the DestroyEvent is queued and no more events can be raised:
+		// let the recorder drain and close its log before we exit out from
+		// under it. blocks, which is why the ProcessingFrame is up.
+		if (odRecorder != null) {
+			odRecorder.destroy();
+		}
+
 		try {
 			Hopper hopper = Chamber.getHopper();
 			if (hopper != null) {
