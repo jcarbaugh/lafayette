@@ -239,12 +239,12 @@ supplies the initial, next, rest, and final composites. `Application` loads
 | Experiment | What it does | State |
 | --- | --- | --- |
 | `Habituation` | Hopper held open continuously, no discriminative stimuli | Complete |
-| `HopperTraining` | Alternates a grey screen with hopper access | Complete; no properties file |
+| `HopperTraining` | Alternates a grey screen with hopper access | Complete |
 | `Shaping` | Full-screen grey; any response opens the hopper | Complete |
-| `PeckTraining` / `PeckTrainingRed` | Blue bottom-left / red top-right triangle keys on an FR schedule via `HopperRatioAction` | Complete; no properties file |
+| `PeckTraining` / `PeckTrainingRed` | Blue bottom-left / red top-right triangle keys on an FR schedule via `HopperRatioAction` | Complete |
 | `AutoShaping` / `AutoShapingRed` | Autoshaping with blue/red keys; reinforcer delivered if the key is *not* touched | Incomplete; see gaps |
 | `TerminalBaseline` | The core stimulus-control task: one of eight red/blue triangles (4 orientations × 2 colours) inside a white frame, each colour on its own VI schedule | Working; verified end to end July 2026 |
-| `Test1` | Warm-up block of random single-colour composites, then shuffled blocks of blue / red / compound (red+blue) composites, no reinforcement | Complete; no properties file |
+| `Test1` | Warm-up block of random single-colour composites, then shuffled blocks of blue / red / compound (red+blue) composites, no reinforcement | Complete |
 | `ObjectDiscrimination` | Two images side by side, positions randomised. Touching the correct one plays a WAV and opens the hopper; the incorrect one plays a different WAV. Ends early once a sliding-window accuracy criterion is met | Working; the most finished experiment |
 | `MTS` | Matching-to-sample | **Unfinished**; see gaps |
 
@@ -330,10 +330,12 @@ through the flat `Application` property store.
 | `correct_response_wav`, `incorrect_response_wav` | `ObjectDiscrimination` |
 | `imageDirectory` | `MTS` |
 | `interval_min`, `interval_max` | `TerminalBaseline`, `Test1` (VI schedule bounds) |
-| `composite_min`, `composite_max`, `composite_duration` | Active composite duration bounds |
-| `rest_min`, `rest_max`, `rest_duration`, `rest_probability` | Rest composite duration and likelihood |
-| `response_correction_duration` | Extension applied when the subject responds during a rest |
-| `ratio` | `PeckTraining` (responses per reinforcer) |
+| `composite_min`, `composite_max` | Active composite duration bounds (`TerminalBaseline`, `Test1`, `PeckTraining` / `PeckTrainingRed`) |
+| `composite_duration` | `Test1` (fixed duration of a test-block composite) |
+| `rest_min`, `rest_max`, `rest_probability` | Rest composite duration bounds and likelihood |
+| `rest_duration` | `BaseExperimentImpl.getRestDuration()`; only `HopperTraining` calls it |
+| `response_correction_duration` | Extension applied when the subject responds during a rest. Read only when the experiment's `isCorrecting()` is true — of the experiments here, `TerminalBaseline` and `Test1` |
+| `ratio` | `PeckTraining`, `PeckTrainingRed` (responses per reinforcer, via `HopperRatioAction`) |
 | `pseudo_random` | `true` prevents the same composite appearing twice in a row |
 | `block_count` | `Test1` (number of test blocks before the session ends) |
 | `show_active_area` | `true` outlines invisible touch targets in cyan, a debugging aid |
@@ -449,11 +451,16 @@ Booth folder, a stand-in used to test the image cache, and needs updating.
 `conf/application.properties` and `conf/ObjectDiscrimination.properties` used to carry the
 same problem; their paths are now repo-relative.
 
-**Missing properties files.** Only `MTS`, `ObjectDiscrimination`, and `TerminalBaseline`
-have one. `PeckTraining`, `PeckTrainingRed`, `AutoShaping`, `AutoShapingRed`,
-`HopperTraining`, and `Test1` read keys that no checked-in file defines
-(`ratio`, `composite_min`/`max`, `rest_min`/`max`, `rest_duration`, `composite_duration`,
-`block_count`), and will fail with a `NumberFormatException` on a null value.
+**Reconstructed experiment parameters.** Every experiment now has a properties file, so
+none of them still crash on a null value — but the six written in July 2026
+(`HopperTraining`, `PeckTraining`, `PeckTrainingRed`, `AutoShaping`, `AutoShapingRed`,
+`Test1`) carry **invented values, not recovered ones**. Nothing in the repo or the commit
+history records what these tasks were actually run at. The numbers were chosen to be
+behaviourally sensible and to make a session observable in a reasonable time: `ratio = 1`
+because peck training reinforces every peck, a long variable ITI against a short key
+presentation for autoshaping, and `Test1`'s shared keys mirrored from
+`TerminalBaseline.properties`. Anything comparing against historical data needs the real
+parameters, which are gone — the same caveat as the recreated media above.
 
 **Lost recorder classes.** `Application` imports, commented out,
 `edu.american.huntsberry.data.TerminalBaseline2Recorder` and `TerminalBaseline3Recorder`.
@@ -567,8 +574,29 @@ A reasonable order of attack:
    `Desktop.requestForeground` is called and does not override it, and an unmodified build
    behaves the same way, which is what made this look intermittent (it worked in one session
    out of four) rather than broken.
-5. **Write the missing properties files** for the experiments that lack one. The required
-   keys are listed above and each experiment's constructor makes them explicit.
+5. ~~**Write the missing properties files** for the experiments that lack one. The required
+   keys are listed above and each experiment's constructor makes them explicit.~~ Done, with
+   two corrections to the list above it. `Habituation` and `Shaping` needed **nothing**: both
+   override `isCorrecting()` to `false`, so `response_correction_duration` is never read,
+   neither calls `getRestDuration()`, and the only key either touches is
+   `reinforcement_duration`, which is already global. They were never broken, and got a file
+   only so every experiment has one place to tune hopper time. In the other direction, `ratio`,
+   `composite_duration`, and `block_count` are read through `Application.getIntProperty` rather
+   than `getProperty`, so a grep for the latter misses them, and `Test1` additionally needs
+   `response_correction_duration` — it is the only experiment in this set that corrects.
+   Verified two ways on JDK 26 with `MockHopper`: a static pass confirming every key each
+   experiment parses as a number resolves against `application.properties` plus its own file,
+   and a run of all eight. Each reached and passed the code that used to throw —
+   `HopperTraining` alternated a 10001 ms grey screen with 4051 ms of hopper access,
+   `PeckTraining` ran a 12184 ms key presentation and a 7853 ms rest (bounds 10000–20000 and
+   5000–10000), `PeckTrainingRed` 17401 ms and 6359 ms, both `AutoShaping` variants reached
+   their rest composite at 12009 ms, and `Test1` ran initial → warm-up composite → rest →
+   warm-up composite with the rest lasting 1927 ms against bounds of 1000–2000. As a control,
+   removing `conf/PeckTraining.properties` again reproduces
+   `NumberFormatException: Cannot parse null string` at `PeckTraining.<init>`. The values
+   themselves are invented rather than recovered — see
+   [Known gaps](#known-gaps). This does not make `AutoShaping` work: it no longer crashes, but
+   its composites still draw nothing.
 6. **Fix the Ant build** by dropping the `<javah>` step from the `compile` target; it is
    only needed when rebuilding the native ADU bindings, which can't be rebuilt anyway
    without the missing C source.
